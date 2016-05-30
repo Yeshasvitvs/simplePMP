@@ -23,6 +23,7 @@ class simplePMPThread:public yarp::os::Thread{
 private:
 
 
+    char hand; //Selection of Arm
     std::string robot; //name of the robot
     std::string inputPortName; //input port
 
@@ -33,7 +34,7 @@ private:
 
     bool grasped;
 
-    std::ofstream virTarget, curPosition,jointsLoc;
+    std::ofstream virTarget, curPosition,jointsLoc; //Text Files
 
 
     //Gazebo Simulation Sync
@@ -74,8 +75,11 @@ private:
     double newAnglesRight[10];
 
     //TODO Change in to more efficient code
-    double q1[ITERATION], q2[ITERATION], q3[ITERATION], q4[ITERATION], q5[ITERATION];
-    double q6[ITERATION], q7[ITERATION], q8[ITERATION], q9[ITERATION], q10[ITERATION];
+    double q1L[ITERATION], q2L[ITERATION], q3L[ITERATION], q4L[ITERATION], q5L[ITERATION];
+    double q6L[ITERATION], q7L[ITERATION], q8L[ITERATION], q9L[ITERATION], q10L[ITERATION];
+
+    double q1R[ITERATION], q2R[ITERATION], q3R[ITERATION], q4R[ITERATION], q5R[ITERATION];
+    double q6R[ITERATION], q7R[ITERATION], q8R[ITERATION], q9R[ITERATION], q10R[ITERATION];
 
     //Mean Joint Angles
     double jAnglesMeanLeft[10];
@@ -101,20 +105,28 @@ private:
     double goalREE[3];
 
     //TODO Modify these variables to be more efficient
-    double Gam_Arrx[ITERATION], Gam_Arry[ITERATION], Gam_Arrz[ITERATION];
+    double Gam_ArrxLeft[ITERATION], Gam_ArryLeft[ITERATION], Gam_ArrzLeft[ITERATION];
+    double Gam_ArrxRight[ITERATION], Gam_ArryRight[ITERATION], Gam_ArrzRight[ITERATION];
     double initPosLeftEEIC[3], initPosRightEEIC[3];
 
     //Force Field in Extrinsic Space
-    double *forceField; //This is a pointer
+    double *forceFieldLeft; //This is a pointer
+    double *forceFieldRight;
     double KFORCE;//TODO: try various values
     double KOMP_JANG;
     double KOMP_WAISZT;
     double KOMP_WAISZT2;
 
     //Joint Limit Admitances
-    double J0H, J1H, J2H, J3H, J4H, J5H, J6H, J7H, J8H, J9H;
+    double J0HL, J1HL, J2HL, J3HL, J4HL, J5HL, J6HL, J7HL, J8HL, J9HL;
     double JHdL[10];
+
+    double J0HR, J1HR, J2HR, J3HR, J4HR, J5HR, J6HR, J7HR, J8HR, J9HR;
+    double JHdR[10];
+
+
     double jLimiteFFLeft[10];
+    double jLimiteFFRight[10];
 
     //Jacobian Vectors
     std::vector<double> jacobianLeft;
@@ -173,8 +185,9 @@ public:
 
       double forwardKinematicsLeft(double*,int);
       double forwardKinematicsRight(double*,int);
+
       double* computeForceFieldLeft(double *curPos,double *tarPos);
-      double* computeForceFieldRight(double *,double*);//TODO Finish this module
+      double* computeForceFieldRight(double *curPos,double *tarPos);//TODO Finish this module
 
       void computeTorqueLeft(double *leftForce);
       void computeTorqueRight(double *rightForce);
@@ -184,7 +197,7 @@ public:
 
       //Convert Joint Velocity to Joint Angle
       void jVelAngleLeft(int _time);
-      void jVelAngleRight();
+      void jVelAngleRight(int _time);
 
       void computeEEVelLeft();
       void computeEEVelRight();

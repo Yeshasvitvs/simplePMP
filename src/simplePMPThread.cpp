@@ -179,21 +179,36 @@ void simplePMPThread::init(){
     grasped=false;//This for now can be user input
 
     posErr = 1;
-    memset(Gam_Arrx,0,ITERATION*sizeof(double));
-    memset(Gam_Arry,0,ITERATION*sizeof(double));
-    memset(Gam_Arrz,0,ITERATION*sizeof(double));
+    memset(Gam_ArrxLeft,0,ITERATION*sizeof(double));
+    memset(Gam_ArryLeft,0,ITERATION*sizeof(double));
+    memset(Gam_ArrzLeft,0,ITERATION*sizeof(double));
+
+    memset(Gam_ArrxRight,0,ITERATION*sizeof(double));
+    memset(Gam_ArryRight,0,ITERATION*sizeof(double));
+    memset(Gam_ArrzRight,0,ITERATION*sizeof(double));
 
     //Joint Angle Variables
-    memset(q1,0,ITERATION*sizeof(double));
-    memset(q2,0,ITERATION*sizeof(double));
-    memset(q3,0,ITERATION*sizeof(double));
-    memset(q4,0,ITERATION*sizeof(double));
-    memset(q5,0,ITERATION*sizeof(double));
-    memset(q6,0,ITERATION*sizeof(double));
-    memset(q7,0,ITERATION*sizeof(double));
-    memset(q8,0,ITERATION*sizeof(double));
-    memset(q9,0,ITERATION*sizeof(double));
-    memset(q10,0,ITERATION*sizeof(double));
+    memset(q1L,0,ITERATION*sizeof(double));
+    memset(q2L,0,ITERATION*sizeof(double));
+    memset(q3L,0,ITERATION*sizeof(double));
+    memset(q4L,0,ITERATION*sizeof(double));
+    memset(q5L,0,ITERATION*sizeof(double));
+    memset(q6L,0,ITERATION*sizeof(double));
+    memset(q7L,0,ITERATION*sizeof(double));
+    memset(q8L,0,ITERATION*sizeof(double));
+    memset(q9L,0,ITERATION*sizeof(double));
+    memset(q10L,0,ITERATION*sizeof(double));
+
+    memset(q1R,0,ITERATION*sizeof(double));
+    memset(q2R,0,ITERATION*sizeof(double));
+    memset(q3R,0,ITERATION*sizeof(double));
+    memset(q4R,0,ITERATION*sizeof(double));
+    memset(q5R,0,ITERATION*sizeof(double));
+    memset(q6R,0,ITERATION*sizeof(double));
+    memset(q7R,0,ITERATION*sizeof(double));
+    memset(q8R,0,ITERATION*sizeof(double));
+    memset(q9R,0,ITERATION*sizeof(double));
+    memset(q10R,0,ITERATION*sizeof(double));
 
     //Mean Joint Angles
     jAnglesMeanLeft[0] = 0.0; //Torso
@@ -224,12 +239,20 @@ void simplePMPThread::init(){
     kX=0.01; kY=0.01; kZ=0.01;
 
     //TODO Not sure what name to be for these
-    J0H = 0.041; J1H = 0.52; J2H = 50; J3H = 0.2; J4H = 0.041;
-    J5H = 0.041; J6H = 0.041; J7H = 0.041; J8H = 0.041; J9H = 0.041;
+    J0HL = 0.041; J1HL = 0.52; J2HL = 50; J3HL = 0.2; J4HL = 0.041;
+    J5HL = 0.041; J6HL = 0.041; J7HL = 0.041; J8HL = 0.041; J9HL = 0.041;
 
     //TODO Not sure what name to be for these
-    JHdL[0] = J0H; JHdL[1] = 0.000041; JHdL[2] = J2H; JHdL[3] = 0.041; JHdL[4] = 0.041;
-    JHdL[5] = 5; JHdL[6] = 0.041; JHdL[7] = 75; JHdL[8] = J8H; JHdL[9] = J9H;
+    JHdL[0] = J0HL; JHdL[1] = 0.000041; JHdL[2] = J2HL; JHdL[3] = 0.041; JHdL[4] = 0.041;
+    JHdL[5] = 5; JHdL[6] = 0.041; JHdL[7] = 75; JHdL[8] = J8HL; JHdL[9] = J9HL;
+
+    //TODO Not sure what name to be for these
+    J0HR = 0.041; J1HR = 0.52; J2HR = 50; J3HR = 0.2; J4HR = 0.041;
+    J5HR = 0.041; J6HR = 0.041; J7HR = 0.041; J8HR = 0.041; J9HR = 0.041;
+
+    //TODO Not sure what name to be for these
+    JHdR[0] = J0HR; JHdR[1] = 0.000041; JHdR[2] = J2HR; JHdR[3] = 0.041; JHdR[4] = 0.041;
+    JHdR[5] = 5; JHdR[6] = 0.041; JHdR[7] = 75; JHdR[8] = J8HR; JHdR[9] = J9HR;
 
     //TODO: Change the Admittance Values for each joint later
     admitTorso.assign(3,0);
@@ -410,13 +433,20 @@ void simplePMPThread::setTarget(){
         std::cout << "Using hard coded Goal Targets..." << std::endl;
 #endif
 
+    //Left Arm
     goalLEE[0] = 300; //y direction positive towards left of icub 1000//-1000
     goalLEE[1] = -300;// x direction  negative front wards -1000
     goalLEE[2] = 300;//z upwards postive - This is Changing X Position? -1000
+
+    //Right Arm
+    goalREE[0] = 300; //y direction positive towards left of icub 1000//-1000
+    goalREE[1] = -300;// x direction  negative front wards -1000
+    goalREE[2] = 300;//z upwards postive - This is Changing X Position? -1000
     target = true;
 
 #if DEBUG_CODE>0
-    std::cout << "Acquired Target (x,y,z) : " << "(" << goalLEE[0] << "," << goalLEE[1] << "," << goalLEE[2] << ")" << std::endl;
+    std::cout << "Acquired Left Arm Target (x,y,z) : " << "(" << goalLEE[0] << "," << goalLEE[1] << "," << goalLEE[2] << ")" << std::endl;
+    std::cout << "Acquired Right Arm Target (x,y,z) : " << "(" << goalREE[0] << "," << goalREE[1] << "," << goalREE[2] << ")" << std::endl;
 #endif
 }
 
@@ -592,14 +622,24 @@ void simplePMPThread::checkEEPos(){
       //        << " " << jAnglesLT.at(3) << " " << jAnglesLT.at(4) << " " << jAnglesLT.at(5) << " " << jAnglesLT.at(6) //
         //      << " " << jAnglesLT.at(7) << " " << jAnglesLT.at(8) << " " <<  jAnglesLT.at(9) << std::endl;
 
-    //Left EE
+    //Left Arm EE
     std::cout << "Size of Computed Joint Angle Commands : " << jAnglesLT.size() << std::endl;
     for(int a=0; a < jAnglesLT.size() ; a++){
         leftAngles[a] = jAnglesLT.at(a);
     }
     computeFKLeft(leftPos,leftAngles);
 
-    std::cout << "Values of the Left EE Position to be attained (x,y,z) : " << "(" << leftPos[0] << "," << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
+    std::cout << "Values of the Left Arm EE Position to be attained (x,y,z) : " << "(" << leftPos[0] << "," << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
+
+
+    //Right Arm EE
+    std::cout << "Size of Computed Joint Angle Commands : " << jAnglesRT.size() << std::endl;
+    for(int a=0; a < jAnglesRT.size() ; a++){
+        rightAngles[a] = jAnglesRT.at(a);
+    }
+    computeFKLeft(rightPos,rightAngles);
+
+    std::cout << "Values of the Right Arm EE Position to be attained (x,y,z) : " << "(" << rightPos[0] << "," << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
 
 }
 
@@ -625,8 +665,9 @@ void simplePMPThread::computeEEPos(){
 #if DEBUG_CODE>0
             std::cout << "Values of the Left EE Position (x,y,z) : " << "(" << leftPos[0] << "," << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
 #endif
-            //Right EE
 
+
+            //Right EE
 #if DEBUG_CODE>0
             std::cout << "Computing Forward Kinematics of Right Arm + Torso Configuration..." << std::endl;
 #endif
@@ -648,11 +689,13 @@ void simplePMPThread::computeEEPos(){
                 curPosLeftEE[0] = leftPos[0];//X Value
                 curPosLeftEE[1] = leftPos[1];//Y Value
                 curPosLeftEE[2] = leftPos[2];//Z Value
-                //std::cout << "New Left End Effector Position (x,y,z) : " << "(" << leftPos[0] << "," << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
+                //std::cout << "New Left Arm End Effector Position (x,y,z) : " << "(" << leftPos[0] << "," << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
 
                 curPosRightEE[0] = rightPos[0];//X Value
                 curPosRightEE[1] = rightPos[1];//Y Value
                 curPosRightEE[2] = rightPos[2];//Z Value
+                //std::cout << "New Left Right End Effector Position (x,y,z) : " << "(" << rightPos[0] << "," << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
+
 
 
             /*}else{//This is while running for virtual targets
@@ -691,8 +734,11 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
     initPosRightEE[2] = curPosRightEE[2]; //411;
 
 //#if DEBUG_CODE>0
-    std::cout << "Initial Left EE Position (x,y,z) : " << "(" << initPosLeftEE[0] << "," << initPosLeftEE[1] << "," << initPosLeftEE[2] << ")" << std::endl;
-    std::cout << "Final Left Goal (x,y,z) : " << "(" << goalLEE[0] << "," << goalLEE[1] << "," << goalLEE[2] << ")" << std::endl;
+    std::cout << "Initial Left Arm EE Position (x,y,z) : " << "(" << initPosLeftEE[0] << "," << initPosLeftEE[1] << "," << initPosLeftEE[2] << ")" << std::endl;
+    std::cout << "Final Left Arm Goal (x,y,z) : " << "(" << goalLEE[0] << "," << goalLEE[1] << "," << goalLEE[2] << ")" << std::endl;
+
+    std::cout << "Initial Right Arm EE Position (x,y,z) : " << "(" << initPosRightEE[0] << "," << initPosRightEE[1] << "," << initPosRightEE[2] << ")" << std::endl;
+    std::cout << "Final Right Arm Goal (x,y,z) : " << "(" << goalREE[0] << "," << goalREE[1] << "," << goalREE[2] << ")" << std::endl;
 //#endif
 
     int time;
@@ -703,6 +749,10 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
     initPosLeftEEIC[0] = initPosLeftEE[0];
     initPosLeftEEIC[1] = initPosLeftEE[1];
     initPosLeftEEIC[2] = initPosLeftEE[2];
+
+    initPosLeftEEIC[0] = initPosRightEE[0];
+    initPosRightEEIC[1] = initPosRightEE[1];
+    initPosRightEEIC[2] = initPosRightEE[2];
 
     //Storing the Initial Values of Joint Angles
     initJAnglesLT.assign(jAnglesLT.size(),0);
@@ -722,27 +772,26 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
 
         Gam = GammaDisc(time);
 
-        //std::cout << "Initial Target Position (x,y,z) : " << "(" << initPosLeftEE[0] << "," << initPosLeftEE[1] << "," << initPosLeftEE[2] << ")" << std::endl;
-
+        //Left Arm
         //X Value
         virPosLeftEE[0] = (goalLEE[0]-initPosLeftEE[0])*Gam;
-        Gam_Arrx[time] = virPosLeftEE[0];
-        double *Garx = Gam_Arrx;//This is just a pointer
-        virPosLeftEE[0] = Gamma_Int(Garx,time) + initPosLeftEEIC[0];
+        Gam_ArrxLeft[time] = virPosLeftEE[0];
+        double *GarxLeft = Gam_ArrxLeft;//This is just a pointer
+        virPosLeftEE[0] = Gamma_Int(GarxLeft,time) + initPosLeftEEIC[0];
         initPosLeftEE[0] = virPosLeftEE[0];
 
         //Y Value
         virPosLeftEE[1] = (goalLEE[1]-initPosLeftEE[1])*Gam;
-        Gam_Arry[time] = virPosLeftEE[1];
-        double *Gary = Gam_Arry;
-        virPosLeftEE[1] = Gamma_Int(Gary,time) + initPosLeftEEIC[1];
+        Gam_ArryLeft[time] = virPosLeftEE[1];
+        double *GaryLeft = Gam_ArryLeft;
+        virPosLeftEE[1] = Gamma_Int(GaryLeft,time) + initPosLeftEEIC[1];
         initPosLeftEE[1] = virPosLeftEE[1];
 
         //Z Value
         virPosLeftEE[2] = (goalLEE[2]-initPosLeftEE[2])*Gam;
-        Gam_Arrz[time] = virPosLeftEE[2];
-        double *Garz = Gam_Arrz;
-        virPosLeftEE[2] = Gamma_Int(Garz,time) + initPosLeftEEIC[2];
+        Gam_ArrzLeft[time] = virPosLeftEE[2];
+        double *GarzLeft = Gam_ArrzLeft;
+        virPosLeftEE[2] = Gamma_Int(GarzLeft,time) + initPosLeftEEIC[2];
         initPosLeftEE[2] = virPosLeftEE[2];
 
         virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
@@ -752,11 +801,8 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         //std::cout << "Virtual Target Position (x,y,z) : " << "(" << virPosLeftEE[0] << "," << virPosLeftEE[1] << "," << virPosLeftEE[2] << ")" << std::endl;
         virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
 
-        //TODO: This is where the motor command should go - which is computing the rest of PMP
-        //TODO Get the current EE Position
-
-        forceField = computeForceFieldLeft(curPosLeftEE,initPosLeftEE);//here initPosLeftEE is actually the virtual target
-        computeTorqueLeft(forceField);
+        forceFieldLeft = computeForceFieldLeft(curPosLeftEE,initPosLeftEE);//here initPosLeftEE is actually the virtual target
+        computeTorqueLeft(forceFieldLeft);
         computeJointVelLeft();
         jVelAngleLeft(time);
 
@@ -765,8 +811,6 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
                     jointsLoc << jAnglesLT.at(j) <<"		";}
                 jointsLoc<<endl;
 
-        //computeEEVelLeft();
-        //std::cout << "Computed End Effector Veclocity (x',y',z') : " << "(" << eeVelLeft.at(0) << "," << eeVelLeft.at(1) << "," << eeVelLeft.at(2) << ")" << std::endl;
         //TODO Put this condition after the execution of the motor command and after reading the EE positions
 
         if( ( fabs((virPosLeftEE[0]-goalLEE[0])) < posErr ) && ( fabs((virPosLeftEE[1]-goalLEE[1])) < posErr ) && ( fabs((virPosLeftEE[2]-goalLEE[2])) < posErr ) ){
@@ -779,6 +823,60 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         }else{
             vTarget = true; //Virtual Target is Valid
         }
+
+
+        //Right Arm
+        //X Value
+        virPosRightEE[0] = (goalREE[0]-initPosRightEE[0])*Gam;
+        Gam_ArrxRight[time] = virPosRightEE[0];
+        double *GarxRight = Gam_ArrxRight;//This is just a pointer
+        virPosRightEE[0] = Gamma_Int(GarxRight,time) + initPosRightEEIC[0];
+        initPosRightEE[0] = virPosRightEE[0];
+
+        //Y Value
+        virPosRightEE[1] = (goalLEE[1]-initPosRightEE[1])*Gam;
+        Gam_ArryRight[time] = virPosRightEE[1];
+        double *GaryRight = Gam_ArryRight;
+        virPosRightEE[1] = Gamma_Int(GaryRight,time) + initPosRightEEIC[1];
+        initPosRightEE[1] = virPosRightEE[1];
+
+        //Z Value
+        virPosRightEE[2] = (goalLEE[2]-initPosRightEE[2])*Gam;
+        Gam_ArrzRight[time] = virPosRightEE[2];
+        double *GarzRight = Gam_ArrzRight;
+        virPosRightEE[2] = Gamma_Int(GarzRight,time) + initPosRightEEIC[2];
+        initPosRightEE[2] = virPosRightEE[2];
+
+        virTarget  << initPosRightEE[0] << "		" << initPosRightEE[1] << "		" << initPosRightEE[2] <<endl;
+        computeEEPos(); //Computing the End Effector Positions
+        curPosition  << curPosRightEE[0] << "		" << curPosRightEE[1] << "		" << curPosRightEE[2] <<endl;
+
+        //std::cout << "Virtual Target Position (x,y,z) : " << "(" << virPosRightEE[0] << "," << virPosRightEE[1] << "," << virPosRightEE[2] << ")" << std::endl;
+        virTarget  << initPosRightEE[0] << "		" << initPosRightEE[1] << "		" << initPosRightEE[2] <<endl;
+
+        forceFieldRight = computeForceFieldRight(curPosRightEE,initPosRightEE);//here initPosRightEE is actually the virtual target
+        computeTorqueRight(forceFieldRight);
+        computeJointVelRight();
+        //jVelAngleRight(time);
+
+
+        //TODO Put this condition after the execution of the motor command and after reading the EE positions
+
+        if( ( fabs((virPosRightEE[0]-goalLEE[0])) < posErr ) && ( fabs((virPosRightEE[1]-goalLEE[1])) < posErr ) && ( fabs((virPosRightEE[2]-goalLEE[2])) < posErr ) ){
+//#if DEBUG_CODE>0
+    std::cout << "Virtual Target(x,y,z) Position reached Goal Position approximately : ";
+    std::cout << "(" << virPosRightEE[0] << "," << virPosRightEE[1] << "," << virPosRightEE[2] << ")" << std::endl;
+
+//#endif
+            break;
+        }else{
+            vTarget = true; //Virtual Target is Valid
+        }
+
+
+
+
+
 
     }
 
@@ -858,55 +956,55 @@ void simplePMPThread::cmdJointLeft(){
 void simplePMPThread::jVelAngleLeft(int _time){
 
 
-    q1[_time] = jointVelLeft.at(0);
-    double *j1=q1;
-    double joi1 = Gamma_Int(j1,_time);
-    jAnglesLT.at(0) = joi1 + initJAnglesLT.at(0);
+    q1L[_time] = jointVelLeft.at(0);
+    double *j1L=q1L;
+    double joi1L = Gamma_Int(j1L,_time);
+    jAnglesLT.at(0) = joi1L + initJAnglesLT.at(0);
 
-    q2[_time] = jointVelLeft.at(1);
-    double *j2=q2;
-    double joi2 = Gamma_Int(j2,_time);
-    jAnglesLT.at(1) = joi2 + initJAnglesLT.at(1);
+    q2L[_time] = jointVelLeft.at(1);
+    double *j2L=q2L;
+    double joi2L = Gamma_Int(j2L,_time);
+    jAnglesLT.at(1) = joi2L + initJAnglesLT.at(1);
 
-    q3[_time] = jointVelLeft.at(2);
-    double *j3=q3;
-    double joi3 = Gamma_Int(j3,_time);
-    jAnglesLT.at(2) = joi3 + initJAnglesLT.at(2);
+    q3L[_time] = jointVelLeft.at(2);
+    double *j3L=q3L;
+    double joi3L = Gamma_Int(j3L,_time);
+    jAnglesLT.at(2) = joi3L + initJAnglesLT.at(2);
 
-    q4[_time] = jointVelLeft.at(3);
-    double *j4=q4;
-    double joi4 = Gamma_Int(j4,_time);
-    jAnglesLT.at(3) = joi4 + initJAnglesLT.at(3);
+    q4L[_time] = jointVelLeft.at(3);
+    double *j4L=q4L;
+    double joi4L = Gamma_Int(j4L,_time);
+    jAnglesLT.at(3) = joi4L + initJAnglesLT.at(3);
 
-    q5[_time] = jointVelLeft.at(4);
-    double *j5=q5;
-    double joi5 = Gamma_Int(j5,_time);
-    jAnglesLT.at(4) = joi5 + initJAnglesLT.at(4);
+    q5L[_time] = jointVelLeft.at(4);
+    double *j5L=q5L;
+    double joi5L = Gamma_Int(j5L,_time);
+    jAnglesLT.at(4) = joi5L + initJAnglesLT.at(4);
 
-    q6[_time] = jointVelLeft.at(5);
-    double *j6=q6;
-    double joi6 = Gamma_Int(j6,_time);
-    jAnglesLT.at(5) = joi6 + initJAnglesLT.at(5);
+    q6L[_time] = jointVelLeft.at(5);
+    double *j6L=q6L;
+    double joi6L = Gamma_Int(j6L,_time);
+    jAnglesLT.at(5) = joi6L + initJAnglesLT.at(5);
 
-    q7[_time] = jointVelLeft.at(6);
-    double *j7=q7;
-    double joi7 = Gamma_Int(j7,_time);
-    jAnglesLT.at(6) = joi7 + initJAnglesLT.at(6);
+    q7L[_time] = jointVelLeft.at(6);
+    double *j7L=q7L;
+    double joi7L = Gamma_Int(j7L,_time);
+    jAnglesLT.at(6) = joi7L + initJAnglesLT.at(6);
 
-    q8[_time] = jointVelLeft.at(7);
-    double *j8=q8;
-    double joi8 = Gamma_Int(j8,_time);
-    jAnglesLT.at(7) = joi8 + initJAnglesLT.at(7);
+    q8L[_time] = jointVelLeft.at(7);
+    double *j8L=q8L;
+    double joi8L = Gamma_Int(j8L,_time);
+    jAnglesLT.at(7) = joi8L + initJAnglesLT.at(7);
 
-    q9[_time] = jointVelLeft.at(8);
-    double *j9=q9;
-    double joi9 = Gamma_Int(j9,_time);
-    jAnglesLT.at(8) = joi9 + initJAnglesLT.at(8);
+    q9L[_time] = jointVelLeft.at(8);
+    double *j9L=q9L;
+    double joi9L = Gamma_Int(j9L,_time);
+    jAnglesLT.at(8) = joi9L + initJAnglesLT.at(8);
 
-    q10[_time] = jointVelLeft.at(9);
-    double *j10=q10;
-    double joi10 = Gamma_Int(j10,_time);
-    jAnglesLT.at(9) = joi10 + initJAnglesLT.at(9);
+    q10L[_time] = jointVelLeft.at(9);
+    double *j10L=q10L;
+    double joi10L = Gamma_Int(j10L,_time);
+    jAnglesLT.at(9) = joi10L + initJAnglesLT.at(9);
 
 #if DEBUG_CODE>0
     std::cout << "Computed New Joint Angles : " << " " <<  jAnglesLT.at(0) << " " << jAnglesLT.at(1) << " " << jAnglesLT.at(2) //
@@ -915,12 +1013,67 @@ void simplePMPThread::jVelAngleLeft(int _time){
 #endif
 
 
+}
+
+void simplePMPThread::jVelAngleRight(int _time){
+
+
+  q1R[_time] = jointVelRight.at(0);
+    double *j1R=q1R;
+    double joi1R = Gamma_Int(j1R,_time);
+    jAnglesRT.at(0) = joi1R + initJAnglesRT.at(0);
+
+    q2R[_time] = jointVelRight.at(1);
+    double *j2R=q2R;
+    double joi2R = Gamma_Int(j2R,_time);
+    jAnglesRT.at(1) = joi2R + initJAnglesRT.at(1);
+
+    q3R[_time] = jointVelRight.at(2);
+    double *j3R=q3R;
+    double joi3R = Gamma_Int(j3R,_time);
+    jAnglesRT.at(2) = joi3R + initJAnglesRT.at(2);
+
+    q4R[_time] = jointVelRight.at(3);
+    double *j4R=q4R;
+    double joi4R = Gamma_Int(j4R,_time);
+    jAnglesRT.at(3) = joi4R + initJAnglesRT.at(3);
+
+    q5R[_time] = jointVelRight.at(4);
+    double *j5R=q5R;
+    double joi5R = Gamma_Int(j5R,_time);
+    jAnglesRT.at(4) = joi5R + initJAnglesRT.at(4);
+
+    q6R[_time] = jointVelRight.at(5);
+    double *j6R=q6R;
+    double joi6R = Gamma_Int(j6R,_time);
+    jAnglesRT.at(5) = joi6R + initJAnglesRT.at(5);
+
+    q7R[_time] = jointVelRight.at(6);
+    double *j7R=q7R;
+    double joi7R = Gamma_Int(j7R,_time);
+    jAnglesRT.at(6) = joi7R + initJAnglesRT.at(6);
+
+    q8R[_time] = jointVelRight.at(7);
+    double *j8R=q8R;
+    double joi8R = Gamma_Int(j8R,_time);
+    jAnglesRT.at(7) = joi8R + initJAnglesRT.at(7);
+
+    q9R[_time] = jointVelRight.at(8);
+    double *j9R=q9R;
+    double joi9R = Gamma_Int(j9R,_time);
+    jAnglesRT.at(8) = joi9R + initJAnglesRT.at(8);
+
+    q10R[_time] = jointVelRight.at(9);
+    double *j10R=q10R;
+    double joi10R = Gamma_Int(j10R,_time);
+    jAnglesRT.at(9) = joi10R + initJAnglesRT.at(9);
 
 #if DEBUG_CODE>0
-    //std::cout << "Corrected New Joint Angles : " << " " <<  jAnglesLT.at(0) << " " << jAnglesLT.at(1) << " " << jAnglesLT.at(2) //
-    //          << " " << jAnglesLT.at(3) << " " << jAnglesLT.at(4) << " " << jAnglesLT.at(5) << " " << jAnglesLT.at(6) //
-    //          << " " << jAnglesLT.at(7) << " " << jAnglesLT.at(8) << " " <<  jAnglesLT.at(9) << std::endl;
+    std::cout << "Computed New Joint Angles : " << " " <<  jAnglesRT.at(0) << " " << jAnglesRT.at(1) << " " << jAnglesRT.at(2) //
+              << " " << jAnglesRT.at(3) << " " << jAnglesRT.at(4) << " " << jAnglesRT.at(5) << " " << jAnglesRT.at(6) //
+              << " " << jAnglesRT.at(7) << " " << jAnglesRT.at(8) << " " <<  jAnglesRT.at(9) << std::endl;
 #endif
+
 }
 
 void simplePMPThread::correctAnglesLeft(double *angles){
@@ -972,9 +1125,28 @@ void simplePMPThread::computeJointVelLeft(){
     }
     std::cout << std::endl;
 #endif
-
-
 }
+
+void simplePMPThread::computeJointVelRight(){
+
+    jointVelRight.assign(10,0);//TODO: Have to change it when using more than 10 joints
+    for(int t=0; t < 3 ; t++){
+        jointVelRight.at(t) = admitTorso.at(t)*torqueRight.at(t);
+    }
+
+    for(int t=0; t < 7 ; t++){
+        jointVelRight.at(t) = KOMP_JANG*torqueRight.at(t);
+    }
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Joint Veclocity for the joints of Torso + Right Arm Configuration : " << std::endl;
+    for(int v=0; v < jointVelRight.size() ; v++){
+        std::cout << " " << jointVelRight.at(v);
+    }
+    std::cout << std::endl;
+#endif
+}
+
 
 double* simplePMPThread::computeForceFieldLeft(double *curPos, double *tarPos){
 
@@ -995,16 +1167,35 @@ double* simplePMPThread::computeForceFieldLeft(double *curPos, double *tarPos){
     return res;
 }
 
+double* simplePMPThread::computeForceFieldRight(double *curPos, double *tarPos){
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Force Field for Right End Effector..." << std::endl;
+#endif
+
+    //std::cout << "Present Position (x,y,z) : "  << "(" << *(curPos+0) << "," << *(curPos+1) << "," << *(curPos+2) << ")" ;
+    //std::cout << "Target Position (x,y,x) : " << "(" << *(tarPos+0) << "," << *(tarPos+1) << "," << *(tarPos+2) << ")" << std::endl;
+    static double res[3];
+
+    res[0] = 0.09*(*(tarPos+0)- *(curPos+0)); //0.09
+    res[1] = 0.09*((*(tarPos+1)- *(curPos+1))); //0.09
+    res[2] = 0.07*((*(tarPos+2)- *(curPos+2))); //0.07
+#if DEBUG_CODE>0
+    std::cout << "Computed Force (Fx,Fy,Fz) : " << "(" << res[0] << "," << res[1] << "," << res[2] << ")" << std::endl;
+#endif
+    return res;
+}
+
 void simplePMPThread::computeTorqueLeft(double *leftForce){
 
     //Local Variables
-    double ff[3];
-    static double jac[30];//TODO Change it to vectors better
+    double ffL[3];
+    static double jacL[30];//TODO Change it to vectors better
     torqueLeft.assign(10,0); //TODO: Have to change it when using more than 10 joints
     //Assigning force to local variables
-    ff[0] = *(leftForce+0);
-    ff[1] = *(leftForce+1);
-    ff[2] = *(leftForce+2);
+    ffL[0] = *(leftForce+0);
+    ffL[1] = *(leftForce+1);
+    ffL[2] = *(leftForce+2);
 
     jacobianLeft = computeJacobianLeft(jAnglesLT);//Note Sending Joint Angles of Torso(3)+Left Arm(16)
 #if DEBUG_CODE>0
@@ -1028,8 +1219,8 @@ void simplePMPThread::computeTorqueLeft(double *leftForce){
 
     //Computing Torque from Force Field Using Jacobian Transpose
     for(int p=0 ; p < (jacobianLeft.size()/3) ; p++){
-        torqueLeft.at(p) = jacobianLeft.at(p)*ff[0] + jacobianLeft.at(p+10)*ff[1] //
-                + jacobianLeft.at(p+20)*ff[2] + jLimiteFFLeft[p];
+        torqueLeft.at(p) = jacobianLeft.at(p)*ffL[0] + jacobianLeft.at(p+10)*ffL[1] //
+                + jacobianLeft.at(p+20)*ffL[2] + jLimiteFFLeft[p];
     }
 
 #if DEBUG_CODE>0
@@ -1039,8 +1230,54 @@ void simplePMPThread::computeTorqueLeft(double *leftForce){
     }
     std::cout << std::endl;
 #endif
-
 }
+
+void simplePMPThread::computeTorqueRight(double *rightForce){
+
+    //Local Variables
+    double ffR[3];
+    static double jacR[30];//TODO Change it to vectors better
+    torqueRight.assign(10,0); //TODO: Have to change it when using more than 10 joints
+    //Assigning force to local variables
+    ffR[0] = *(rightForce+0);
+    ffR[1] = *(rightForce+1);
+    ffR[2] = *(rightForce+2);
+
+    jacobianRight = computeJacobianRight(jAnglesRT);//Note Sending Joint Angles of Torso(3)+Right Arm(16)
+#if DEBUG_CODE>0
+    std::cout << "Computed Jacobian of size " << jacobianRight.size() <<  " for Right Arm + Torso Configuration : ";
+    for(int j=0; j < jacobianRight.size() ; j++){
+        std::cout << " " << jacobianRight.at(j);
+    }
+    std::cout << std::endl;
+#endif
+
+    //Computing the Joint Limit Force Field
+    for(int i = 0; i < 10 ; i++){
+        jLimiteFFRight[i] = (jAnglesMeanRight[i] - jAnglesRT.at(i)) * JHdR[i];
+    }
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Joint Limit Force Field : " << jLimiteFFRight[0] << " " << jLimiteFFRight[1] << " " //
+              << jLimiteFFRight[2] << " " << jLimiteFFRight[3] << " " << jLimiteFFRight[4] << " " << jLimiteFFRight[5] //
+              << " " << jLimiteFFRight[6] << " " << jLimiteFFRight[7] << " " << jLimiteFFRight[8] << " " << jLimiteFFRight[9] << std::endl;
+#endif
+
+    //Computing Torque from Force Field Using Jacobian Transpose
+    for(int p=0 ; p < (jacobianRight.size()/3) ; p++){
+        torqueRight.at(p) = jacobianRight.at(p)*ffR[0] + jacobianRight.at(p+10)*ffR[1] //
+                + jacobianRight.at(p+20)*ffR[2] + jLimiteFFRight[p];
+    }
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Torques of size " << torqueRight.size() <<  " for Right Arm + Torso Joints : ";
+    for(int t=0; t < torqueRight.size() ; t++){
+        std::cout << " " << torqueRight.at(t);
+    }
+    std::cout << std::endl;
+#endif
+}
+
 
 double simplePMPThread::GammaDisc(int _Time)	{
     double t_ramp=(_Time)*RAMP_KONSTANT; //0.0025 to
