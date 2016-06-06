@@ -1,4 +1,3 @@
-
 #include <simplePMPModule.h>
 #include<yarp/os/ResourceFinderOptions.h>
 #include<yarp/os/ResourceFinder.h>

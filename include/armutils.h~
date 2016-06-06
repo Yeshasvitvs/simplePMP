@@ -1,0 +1,41 @@
+#ifndef ARMUTILS_H
+#define ARMUTILS_H
+
+#include <iCub/iKin/iKinFwd.h>
+#include <cmath>
+//#define CTRL_DEG2RAD M_PI/180
+
+using namespace iCub::iKin;
+using namespace iCub::ctrl;
+class armUtils{
+
+public:
+
+
+    armUtils(){
+
+        //TODO Pass the argument for the arm 
+        iCub::iKin::iCubArm libArm("left");
+        chain = libArm.asChain();
+    }
+
+    ~armUtils(){
+
+    }
+
+    yarp::sig::Vector getEEPos();//TODO Pass the arm argument
+    yarp::sig::Vector getJacobian();
+
+protected:
+
+    std::string arm;
+    iKinChain *chain;//Arm object is affected by modifications on the chain
+    yarp::sig::Vector eePos;
+    yarp::sig::Vector armJacobian;
+    //virtual void allocate(const std::string &_type);
+
+
+};
+
+#endif // ARMUTILS_H
+

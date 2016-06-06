@@ -6,24 +6,34 @@
 #define ITERATION 2000
 #define rad2degree          180/3.14159
 
-#include<yarp/os/all.h>
-#include<yarp/sig/all.h>
-#include<yarp/dev/all.h>
 #include<iostream>
-#include<string>
+//#include<string>
 #include<vector>
 #include <fstream>
 #include <cmath>
 
-#include<synchronizer.hpp>
+#include<yarp/math/Math.h>
+#include<yarp/os/all.h>
+#include<yarp/sig/all.h>
+#include<yarp/dev/all.h>
 
+#include<synchronizer.hpp>
+#include<iCub/iKin/iKinFwd.h>
+#include<iCub/ctrl/math.h>
+
+#include<armUtils.h>
+
+using namespace std;
+using namespace yarp;
 
 
 class simplePMPThread:public yarp::os::Thread{
 private:
+    //iCub Arm Objects for Left and Right Arms using iKin Library
+    armUtils* armLeft;
+    armUtils* armRight;
 
-
-    char hand; //Selection of Arm
+    std::string armName;
     std::string robot; //name of the robot
     std::string inputPortName; //input port
 
