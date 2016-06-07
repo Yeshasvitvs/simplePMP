@@ -34,7 +34,7 @@ yarp::sig::Vector armUtils::getEEPos(std::vector<double> qJoints){
         //std::cout << q[i] << " " ;
     }
     //std::cout << "Size of the Joint Angles Received : " << q.size() << std::endl;
-    std::cout << "The Current Joint Configuration is : " << (q).toString().c_str() << std::endl;
+    //std::cout << "The Current Joint Configuration is : " << (q).toString().c_str() << std::endl;
     chain->setAng(q);
     yarp::sig::Vector eePos = chain->EndEffPosition();
     //std::cout << armType.c_str() << " Arm End Effector Position (x,y,z) : " << "(" << eePos[0] << "," << eePos[1] << "," << eePos[2] << ")" << std::endl;
@@ -44,14 +44,21 @@ std::vector<double> armUtils::getJacobian(){
 
     std::vector<double> jacobian;
     jacobian.assign(30,0);
-    std::cout << "Computing Jacobian with the Current Joint Configuration as : " << (q).toString().c_str() << std::endl;
+    //std::cout << "Computing Jacobian with the Current Joint Configuration as : " << (q).toString().c_str() << std::endl;
     yarp::sig::Matrix armJacobian = chain->AnaJacobian();
+    //std::cout << "Size of the Arm Jacobian Matrix : " << "(" << armJacobian.rows() << "," << armJacobian.cols() << ")" << std::endl;
     int rows = armJacobian.rows();
     int cols = armJacobian.cols();
-    for(int r = 0 ; r < rows ; r++){
+    for(int r = 0 ; r < rows-3 ; r++){//Using only the first three rows of the Jacobian Matrix
         for(int c = 0 ; c < cols ; c++){
             jacobian.at((r*10)+c) = armJacobian(r,c);
         }
     }
+
+    /*std::cout << "Size of the Jacobian : " << jacobian.size() << std::endl;
+    std::cout << "Jacobian Values : ";
+    for(int j = 0 ; j < jacobian.size() ; j++){
+        std::cout << jacobian.at(j) << " ";
+    }std::cout << std::endl;*/
     return jacobian;
 }

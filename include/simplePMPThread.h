@@ -21,6 +21,7 @@
 #include<iCub/iKin/iKinFwd.h>
 #include<iCub/ctrl/math.h>
 
+
 #include<armUtils.h>
 
 using namespace std;
@@ -135,8 +136,8 @@ private:
     double JHdR[10];
 
 
-    double jLimiteFFLeft[10];
-    double jLimiteFFRight[10];
+    double jLimitLeft[10];
+    double jLimitRight[10];
 
     //Jacobian Vectors
     std::vector<double> jacobianLeft;
