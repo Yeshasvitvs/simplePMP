@@ -207,8 +207,8 @@ public:
       void computeJointVelRight();
 
       //Convert Joint Velocity to Joint Angle
-      void jVelAngleLeft(int _time);
-      void jVelAngleRight(int _time);
+      void jVel2AngleLeft(int _time);
+      void jVel2AngleRight(int _time);
 
       void computeEEVelLeft();
       void computeEEVelRight();

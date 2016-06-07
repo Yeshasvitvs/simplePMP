@@ -518,14 +518,21 @@ void simplePMPThread::readJoints(){
 
 void simplePMPThread::checkEEPos(){
 
-    //std::cout << "Corrected Joint Angles : " << " " <<  jAnglesLT.at(0) << " " << jAnglesLT.at(1) << " " << jAnglesLT.at(2) //
-      //        << " " << jAnglesLT.at(3) << " " << jAnglesLT.at(4) << " " << jAnglesLT.at(5) << " " << jAnglesLT.at(6) //
-        //      << " " << jAnglesLT.at(7) << " " << jAnglesLT.at(8) << " " <<  jAnglesLT.at(9) << std::endl;
+    std::cout << "Commanded Joint Angles in Degrees: " << " " <<  jAnglesLT.at(0)*CTRL_RAD2DEG
+              << " " << jAnglesLT.at(1)*CTRL_RAD2DEG
+              << " " << jAnglesLT.at(2)*CTRL_RAD2DEG
+              << " " << jAnglesLT.at(3)*CTRL_RAD2DEG
+              << " " << jAnglesLT.at(4)*CTRL_RAD2DEG
+              << " " << jAnglesLT.at(5)*CTRL_RAD2DEG
+              << " " << jAnglesLT.at(6)*CTRL_RAD2DEG
+              << " " << jAnglesLT.at(7)*CTRL_RAD2DEG
+              << " " << jAnglesLT.at(8)*CTRL_RAD2DEG
+              << " " << jAnglesLT.at(9)*CTRL_RAD2DEG << std::endl;
 
     //Left Arm EE
-    std::cout << "Size of Computed Joint Angle Commands : " << jAnglesLT.size() << std::endl;
+    //std::cout << "Size of Computed Joint Angle Commands : " << jAnglesLT.size() << std::endl;
     for(int a=0; a < jAnglesLT.size() ; a++){
-        leftAngles[a] = jAnglesLT.at(a);
+        leftAngles[a] = jAnglesLT.at(a)*CTRL_RAD2DEG;
     }
 
     //computeFKLeft(leftPos,leftAngles);
@@ -536,13 +543,14 @@ void simplePMPThread::checkEEPos(){
     leftPos[1] = lpos[1];
     leftPos[2] = lpos[2];
 
-    std::cout << "Values of the Left Arm EE Position to be attained (x,y,z) : " << "(" << leftPos[0] << "," << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
+    std::cout << "Values of the Left Arm EE Position to be attained (x,y,z) : " << "(" << leftPos[0] << ","
+              << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
 
 
     //Right Arm EE
-    std::cout << "Size of Computed Joint Angle Commands : " << jAnglesRT.size() << std::endl;
+    //std::cout << "Size of Computed Joint Angle Commands : " << jAnglesRT.size() << std::endl;
     for(int a=0; a < jAnglesRT.size() ; a++){
-        rightAngles[a] = jAnglesRT.at(a);
+        rightAngles[a] = jAnglesRT.at(a)*CTRL_RAD2DEG;
     }
 
     //computeFKRight(rightPos,rightAngles);
@@ -554,7 +562,8 @@ void simplePMPThread::checkEEPos(){
     rightPos[2] = rpos[2];
 
 
-    std::cout << "Values of the Right Arm EE Position to be attained (x,y,z) : " << "(" << rightPos[0] << "," << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
+    std::cout << "Values of the Right Arm EE Position to be attained (x,y,z) : " << "(" << rightPos[0] << ","
+              << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
 
 }
 
@@ -742,10 +751,10 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
                   << "(" << virPosLeftEE[0] << "," << virPosLeftEE[1] << "," << virPosLeftEE[2] << ")" << std::endl;
 #endif
 
-        //forceFieldLeft = computeForceFieldLeft(curPosLeftEE,initPosLeftEE);//here initPosLeftEE is actually the virtual target
-        //computeTorqueLeft(forceFieldLeft);
-        //computeJointVelLeft();
-        //jVelAngleLeft(time);
+        forceFieldLeft = computeForceFieldLeft(curPosLeftEE,initPosLeftEE);//here initPosLeftEE is actually the virtual target
+        computeTorqueLeft(forceFieldLeft);
+        computeJointVelLeft();
+        jVel2AngleLeft(time);
 
         //Storing The Joing Angles to the Ouput Stream File
         for(int j = 0 ; j < jAnglesLT.size() ; j++){
@@ -765,6 +774,7 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         }
 
 
+        /*
         //Right Arm
         //X Value
         virPosRightEE[0] = (goalREE[0]-initPosRightEE[0])*Gam;
@@ -801,7 +811,7 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         //forceFieldRight = computeForceFieldRight(curPosRightEE,initPosRightEE);//here initPosRightEE is actually the virtual target
         //computeTorqueRight(forceFieldRight);
         //computeJointVelRight();
-        //jVelAngleRight(time);
+        //jVel2AngleRight(time);
 
 
         //TODO Put this condition after the execution of the motor command and after reading the EE positions
@@ -816,6 +826,7 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
             vTarget = true; //Virtual Target is Valid
         }
 
+        */
 
     }
 
@@ -823,10 +834,10 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
     //curPosition.close();
 
     //Commanding Joint Motors
-    //cmdJointLeft();
+    cmdJointLeft();
 
     //Checking Final End Effector Position Reached
-    //checkEEPos();
+    checkEEPos();
 
 }
 
@@ -840,7 +851,7 @@ void simplePMPThread::cmdJointLeft(){
         std::cout << " " << cmdJLeft[j];
     }std::cout<<std::endl;
 
-    correctAnglesLeft(cmdJLeft);
+    //correctAnglesLeft(cmdJLeft);
 
 #if DEBUG_CODE>0
     std::cout << "Received Joint Angles, Commanding the Motors..." << std::endl;
@@ -894,6 +905,49 @@ void simplePMPThread::cmdJointLeft(){
 #endif
     }
 
+
+}
+
+void simplePMPThread::cmdJointRight(){
+
+    std::cout << "Received Joint Angles, Commanding the Motors..." << std::endl;
+    std::cout << "Corrected Joint Angles in Degrees : ";
+    double cmdJRight[jAnglesRT.size()];
+    for(int j = 0; j < jAnglesRT.size() ; j++){
+        cmdJRight[j] = jAnglesRT.at(j)*CTRL_RAD2DEG;
+        std::cout << " " << cmdJRight[j];
+    }std::cout<<std::endl;
+
+    //correctAnglesLeft(cmdJRight);
+
+#if DEBUG_CODE>0
+    std::cout << "Received Joint Angles, Commanding the Motors..." << std::endl;
+#endif
+
+
+    //This is Torso Control
+    if(!yarp::os::Network::isConnected(cmdTorsoPort.getName().c_str(),"/icubGazeboSim/torso/rpc:i")){
+        yarp::os::Network::connect(cmdTorsoPort.getName().c_str(),"/icubGazeboSim/torso/rpc:i");
+        for(int j = 0 ; j < 3 ; j++){//TODO Here only 3 joints are controlled
+            yarp::os::Bottle& cmdT = cmdTorsoPort.prepare();
+            cmdT.clear();
+            cmdT.addString("set");
+            cmdT.addString("pos");
+            cmdT.addInt(j);
+            cmdT.addDouble(cmdJRight[j]);
+            cmdTorsoPort.writeStrict();
+            //syncObject->clockServer.stepSimulation(syncObject->configuration.numberOfSteps);
+            //syncObject->clockServer.continueSimulation();
+        }
+
+
+    }else{
+        yarp::os::Network::disconnect(cmdTorsoPort.getName().c_str(),"/icubGazeboSim/torso/rpc:i");
+#if DEBUG_CODE>0
+        std::cout << " Disconnected " << cmdTorsoPort.getName().c_str() << " and /icubGazeboSim/torso/rpc:i"<< std::endl;
+#endif
+    }
+
     //This is Right Arm Control
     if(!yarp::os::Network::isConnected(cmdRightArmPort.getName().c_str(),"/icubGazeboSim/right_arm_no_hand/rpc:i")){
         yarp::os::Network::connect(cmdRightArmPort.getName().c_str(),"/icubGazeboSim/right_arm_no_hand/rpc:i");
@@ -903,8 +957,7 @@ void simplePMPThread::cmdJointLeft(){
             cmdRA.addString("set");
             cmdRA.addString("pos");
             cmdRA.addInt(j-3);
-            cmdRA.addDouble(jAnglesRT.at(j));
-            //std::cout << "j value : " << j-3 << " and Angle value : " << jAnglesRT.at(j) << std::endl;
+            cmdRA.addDouble(cmdJRight[j]);
             cmdRightArmPort.writeStrict();
             yarp::os::Time::delay(1);
         }
@@ -919,7 +972,7 @@ void simplePMPThread::cmdJointLeft(){
 
 }
 
-void simplePMPThread::jVelAngleLeft(int _time){
+void simplePMPThread::jVel2AngleLeft(int _time){
 
 
     q1L[_time] = jointVelLeft.at(0);
@@ -981,7 +1034,7 @@ void simplePMPThread::jVelAngleLeft(int _time){
 
 }
 
-void simplePMPThread::jVelAngleRight(int _time){
+void simplePMPThread::jVel2AngleRight(int _time){
 
 
   q1R[_time] = jointVelRight.at(0);
@@ -1058,18 +1111,137 @@ void simplePMPThread::correctAnglesLeft(double *angles){
     }
 }
 
-void simplePMPThread::computeEEVelLeft(){
 
+double* simplePMPThread::computeForceFieldLeft(double *curPos, double *tarPos){
 
-    //Computing End Effector Velocity
-    eeVelLeft.assign(3,0);
-    for(int v=0 ; v < 3 ; v++){//This loop runs 3 times - X,Y,Z
-        for(int i=0; i<10 ; i++){
-            eeVelLeft.at(v) = eeVelLeft.at(v) + jacobianLeft.at(i+(v*10)) * jointVelLeft.at(i) ;
-        }
-    }
 #if DEBUG_CODE>0
-    std::cout << "Computed End Effector Veclocity (x',y',z') : " << "(" << eeVelLeft.at(0) << "," << eeVelLeft.at(1) << "," << eeVelLeft.at(2) << ")" << std::endl;
+    std::cout << "Computed Force Field for Left End Effector..." << std::endl;
+#endif
+
+    static double res[3];
+
+    res[0] = 0.09*(*(tarPos+0)- *(curPos+0)); //0.09
+    res[1] = 0.09*((*(tarPos+1)- *(curPos+1))); //0.09
+    res[2] = 0.07*((*(tarPos+2)- *(curPos+2))); //0.07
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Left EE Force (Fx,Fy,Fz) : " << "(" << res[0] << "," << res[1] << "," << res[2] << ")" << std::endl;
+#endif
+    return res;
+}
+
+double* simplePMPThread::computeForceFieldRight(double *curPos, double *tarPos){
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Force Field for Right End Effector..." << std::endl;
+#endif
+
+    static double res[3];
+
+    res[0] = 0.09*(*(tarPos+0)- *(curPos+0)); //0.09
+    res[1] = 0.09*((*(tarPos+1)- *(curPos+1))); //0.09
+    res[2] = 0.07*((*(tarPos+2)- *(curPos+2))); //0.07
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Right EE Force (Fx,Fy,Fz) : " << "(" << res[0] << "," << res[1] << "," << res[2] << ")" << std::endl;
+#endif
+    return res;
+}
+
+void simplePMPThread::computeTorqueLeft(double *leftForce){
+
+    //Local Variables
+    double ffL[3];
+    torqueLeft.assign(10,0); //TODO: Have to change it when using more than 10 joints
+
+    //Assigning force to local variables
+    ffL[0] = *(leftForce+0);
+    ffL[1] = *(leftForce+1);
+    ffL[2] = *(leftForce+2);
+
+    //Computing the Joint Limit Force Field
+    for(int i = 0; i < 10 ; i++){
+        jLimitLeft[i] = (jAnglesMeanLeft[i] - jAnglesLT.at(i)) * JHdL[i];
+    }
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Joint Limit Force Field : " << jLimitLeft[0] << " " << jLimitLeft[1] << " " //
+              << jLimitLeft[2] << " " << jLimitLeft[3] << " " << jLimitLeft[4] << " " << jLimitLeft[5] //
+              << " " << jLimitLeft[6] << " " << jLimitLeft[7] << " " << jLimitLeft[8] << " " << jLimitLeft[9] << std::endl;
+#endif
+
+    //jacobianLeft = computeJacobianLeft(jAnglesLT);//Note Sending Joint Angles of Torso(3)+Left Arm(16)
+    jacobianLeft = armLeft->getJacobian();
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Jacobian of size " << jacobianLeft.size() <<  " for Left Arm + Torso Configuration : ";
+    for(int j=0; j < jacobianLeft.size() ; j++){
+        std::cout << " " << jacobianLeft.at(j);
+    }
+    std::cout << std::endl;
+#endif
+
+    //Computing Torque from Force Field Using Jacobian Transpose
+    for(int p=0 ; p < (jacobianLeft.size()/3) ; p++){
+        torqueLeft.at(p) = jacobianLeft.at(p)*ffL[0] + jacobianLeft.at(p+10)*ffL[1] //
+                + jacobianLeft.at(p+20)*ffL[2] + jLimitLeft[p];
+    }
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Torques of size " << torqueLeft.size() <<  " for Left Arm + Torso Joints : ";
+    for(int t=0; t < torqueLeft.size() ; t++){
+        std::cout << " " << torqueLeft.at(t);
+    }
+    std::cout << std::endl;
+#endif
+
+}
+
+void simplePMPThread::computeTorqueRight(double *rightForce){
+
+    //Local Variables
+    double ffR[3];
+    torqueRight.assign(10,0); //TODO: Have to change it when using more than 10 joints
+
+    //Assigning force to local variables
+    ffR[0] = *(rightForce+0);
+    ffR[1] = *(rightForce+1);
+    ffR[2] = *(rightForce+2);
+
+    //Computing the Joint Limit Force Field
+    for(int i = 0; i < 10 ; i++){
+        jLimitRight[i] = (jAnglesMeanRight[i] - jAnglesRT.at(i)) * JHdR[i];
+    }
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Joint Limit Force Field : " << jLimitRight[0] << " " << jLimitRight[1] << " " //
+              << jLimitRight[2] << " " << jLimitRight[3] << " " << jLimitRight[4] << " " << jLimitRight[5] //
+              << " " << jLimitRight[6] << " " << jLimitRight[7] << " " << jLimitRight[8] << " " << jLimitRight[9] << std::endl;
+#endif
+
+    //jacobianRight = computeJacobianRight(jAnglesRT);//Note Sending Joint Angles of Torso(3)+Right Arm(16)
+    jacobianRight = armRight->getJacobian();
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Jacobian of size " << jacobianRight.size() <<  " for Right Arm + Torso Configuration : ";
+    for(int j=0; j < jacobianRight.size() ; j++){
+        std::cout << " " << jacobianRight.at(j);
+    }
+    std::cout << std::endl;
+#endif
+
+    //Computing Torque from Force Field Using Jacobian Transpose
+    for(int p=0 ; p < (jacobianRight.size()/3) ; p++){
+        torqueRight.at(p) = jacobianRight.at(p)*ffR[0] + jacobianRight.at(p+10)*ffR[1] //
+                + jacobianRight.at(p+20)*ffR[2] + jLimitRight[p];
+    }
+
+#if DEBUG_CODE>0
+    std::cout << "Computed Torques of size " << torqueRight.size() <<  " for Right Arm + Torso Joints : ";
+    for(int t=0; t < torqueRight.size() ; t++){
+        std::cout << " " << torqueRight.at(t);
+    }
+    std::cout << std::endl;
 #endif
 }
 
@@ -1112,140 +1284,6 @@ void simplePMPThread::computeJointVelRight(){
     std::cout << std::endl;
 #endif
 }
-
-
-double* simplePMPThread::computeForceFieldLeft(double *curPos, double *tarPos){
-
-#if DEBUG_CODE>0
-    std::cout << "Computed Force Field for Left End Effector..." << std::endl;
-#endif
-
-    //std::cout << "Present Position (x,y,z) : "  << "(" << *(curPos+0) << "," << *(curPos+1) << "," << *(curPos+2) << ")" ;
-    //std::cout << "Target Position (x,y,x) : " << "(" << *(tarPos+0) << "," << *(tarPos+1) << "," << *(tarPos+2) << ")" << std::endl;
-    static double res[3];
-
-    res[0] = 0.09*(*(tarPos+0)- *(curPos+0)); //0.09
-    res[1] = 0.09*((*(tarPos+1)- *(curPos+1))); //0.09
-    res[2] = 0.07*((*(tarPos+2)- *(curPos+2))); //0.07
-#if DEBUG_CODE>0
-    std::cout << "Computed Force (Fx,Fy,Fz) : " << "(" << res[0] << "," << res[1] << "," << res[2] << ")" << std::endl;
-#endif
-    return res;
-}
-
-double* simplePMPThread::computeForceFieldRight(double *curPos, double *tarPos){
-
-#if DEBUG_CODE>0
-    std::cout << "Computed Force Field for Right End Effector..." << std::endl;
-#endif
-
-    //std::cout << "Present Position (x,y,z) : "  << "(" << *(curPos+0) << "," << *(curPos+1) << "," << *(curPos+2) << ")" ;
-    //std::cout << "Target Position (x,y,x) : " << "(" << *(tarPos+0) << "," << *(tarPos+1) << "," << *(tarPos+2) << ")" << std::endl;
-    static double res[3];
-
-    res[0] = 0.09*(*(tarPos+0)- *(curPos+0)); //0.09
-    res[1] = 0.09*((*(tarPos+1)- *(curPos+1))); //0.09
-    res[2] = 0.07*((*(tarPos+2)- *(curPos+2))); //0.07
-#if DEBUG_CODE>0
-    std::cout << "Computed Force (Fx,Fy,Fz) : " << "(" << res[0] << "," << res[1] << "," << res[2] << ")" << std::endl;
-#endif
-    return res;
-}
-
-void simplePMPThread::computeTorqueLeft(double *leftForce){
-
-    //Local Variables
-    double ffL[3];
-    static double jacL[30];//TODO Change it to vectors better
-    torqueLeft.assign(10,0); //TODO: Have to change it when using more than 10 joints
-    //Assigning force to local variables
-    ffL[0] = *(leftForce+0);
-    ffL[1] = *(leftForce+1);
-    ffL[2] = *(leftForce+2);
-
-    //jacobianLeft = computeJacobianLeft(jAnglesLT);//Note Sending Joint Angles of Torso(3)+Left Arm(16)
-    jacobianLeft = armLeft->getJacobian();
-
-#if DEBUG_CODE>0
-    std::cout << "Computed Jacobian of size " << jacobianLeft.size() <<  " for Left Arm + Torso Configuration : ";
-    for(int j=0; j < jacobianLeft.size() ; j++){
-        std::cout << " " << jacobianLeft.at(j);
-    }
-    std::cout << std::endl;
-#endif
-
-    //Computing the Joint Limit Force Field
-    for(int i = 0; i < 10 ; i++){
-        jLimitLeft[i] = (jAnglesMeanLeft[i] - jAnglesLT.at(i)) * JHdL[i];
-    }
-
-#if DEBUG_CODE>0
-    std::cout << "Computed Joint Limit Force Field : " << jLimitLeft[0] << " " << jLimitLeft[1] << " " //
-              << jLimitLeft[2] << " " << jLimitLeft[3] << " " << jLimitLeft[4] << " " << jLimitLeft[5] //
-              << " " << jLimitLeft[6] << " " << jLimitLeft[7] << " " << jLimitLeft[8] << " " << jLimitLeft[9] << std::endl;
-#endif
-
-    //Computing Torque from Force Field Using Jacobian Transpose
-    for(int p=0 ; p < (jacobianLeft.size()/3) ; p++){
-        torqueLeft.at(p) = jacobianLeft.at(p)*ffL[0] + jacobianLeft.at(p+10)*ffL[1] //
-                + jacobianLeft.at(p+20)*ffL[2] + jLimitLeft[p];
-    }
-
-#if DEBUG_CODE>0
-    std::cout << "Computed Torques of size " << torqueLeft.size() <<  " for Left Arm + Torso Joints : ";
-    for(int t=0; t < torqueLeft.size() ; t++){
-        std::cout << " " << torqueLeft.at(t);
-    }
-    std::cout << std::endl;
-#endif
-}
-
-void simplePMPThread::computeTorqueRight(double *rightForce){
-
-    //Local Variables
-    double ffR[3];
-    static double jacR[30];//TODO Change it to vectors better
-    torqueRight.assign(10,0); //TODO: Have to change it when using more than 10 joints
-    //Assigning force to local variables
-    ffR[0] = *(rightForce+0);
-    ffR[1] = *(rightForce+1);
-    ffR[2] = *(rightForce+2);
-
-    jacobianRight = computeJacobianRight(jAnglesRT);//Note Sending Joint Angles of Torso(3)+Right Arm(16)
-#if DEBUG_CODE>0
-    std::cout << "Computed Jacobian of size " << jacobianRight.size() <<  " for Right Arm + Torso Configuration : ";
-    for(int j=0; j < jacobianRight.size() ; j++){
-        std::cout << " " << jacobianRight.at(j);
-    }
-    std::cout << std::endl;
-#endif
-
-    //Computing the Joint Limit Force Field
-    for(int i = 0; i < 10 ; i++){
-        jLimitRight[i] = (jAnglesMeanRight[i] - jAnglesRT.at(i)) * JHdR[i];
-    }
-
-#if DEBUG_CODE>0
-    std::cout << "Computed Joint Limit Force Field : " << jLimitRight[0] << " " << jLimitRight[1] << " " //
-              << jLimitRight[2] << " " << jLimitRight[3] << " " << jLimitRight[4] << " " << jLimitRight[5] //
-              << " " << jLimitRight[6] << " " << jLimitRight[7] << " " << jLimitRight[8] << " " << jLimitRight[9] << std::endl;
-#endif
-
-    //Computing Torque from Force Field Using Jacobian Transpose
-    for(int p=0 ; p < (jacobianRight.size()/3) ; p++){
-        torqueRight.at(p) = jacobianRight.at(p)*ffR[0] + jacobianRight.at(p+10)*ffR[1] //
-                + jacobianRight.at(p+20)*ffR[2] + jLimitRight[p];
-    }
-
-#if DEBUG_CODE>0
-    std::cout << "Computed Torques of size " << torqueRight.size() <<  " for Right Arm + Torso Joints : ";
-    for(int t=0; t < torqueRight.size() ; t++){
-        std::cout << " " << torqueRight.at(t);
-    }
-    std::cout << std::endl;
-#endif
-}
-
 
 double simplePMPThread::GammaDisc(int _Time)	{
     double t_ramp=(_Time)*RAMP_KONSTANT; //0.0025 to
@@ -1472,6 +1510,22 @@ void simplePMPThread::grasp(){
 
     std::cout << "Grasping Done!" << std::endl;
 
+}
+
+
+void simplePMPThread::computeEEVelLeft(){
+
+
+    //Computing End Effector Velocity
+    eeVelLeft.assign(3,0);
+    for(int v=0 ; v < 3 ; v++){//This loop runs 3 times - X,Y,Z
+        for(int i=0; i<10 ; i++){
+            eeVelLeft.at(v) = eeVelLeft.at(v) + jacobianLeft.at(i+(v*10)) * jointVelLeft.at(i) ;
+        }
+    }
+#if DEBUG_CODE>0
+    std::cout << "Computed End Effector Veclocity (x',y',z') : " << "(" << eeVelLeft.at(0) << "," << eeVelLeft.at(1) << "," << eeVelLeft.at(2) << ")" << std::endl;
+#endif
 }
 
 void simplePMPThread::run(){
