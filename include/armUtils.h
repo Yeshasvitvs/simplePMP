@@ -37,7 +37,7 @@ protected:
 
     if(_type=="right"){
 
-        std::cout << "Allocating Links for the chain of Torso + " << _type.c_str() << " Arm Configuration..."<<std::endl;
+        //std::cout << "Allocating Links for the chain of Torso + " << _type.c_str() << " Arm Configuration..."<<std::endl;
         //Torso Links
         pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
@@ -63,7 +63,7 @@ protected:
 
     }else if(_type=="left"){
 
-        std::cout << "Allocating Links for the chain of Torso + " << _type.c_str() << " Arm Configuration..."<<std::endl;
+        //std::cout << "Allocating Links for the chain of Torso + " << _type.c_str() << " Arm Configuration..."<<std::endl;
         //Torso Links
         pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));

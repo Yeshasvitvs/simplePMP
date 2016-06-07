@@ -586,7 +586,8 @@ void simplePMPThread::computeEEPos(){
 
 
 #if DEBUG_CODE>0
-            std::cout << "Values of the Left EE Position (x,y,z) : " << "(" << leftPos[0] << "," << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
+            std::cout << "New Values of the Left EE Position (x,y,z) : " << "(" << leftPos[0] << ","
+                      << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
 #endif
 
 
@@ -611,7 +612,8 @@ void simplePMPThread::computeEEPos(){
             rightPos[2] = rpos[2];
 
 #if DEBUG_CODE>0
-            std::cout << "Values of the Right EE Position (x,y,z) : " << "(" << rightPos[0] << "," << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
+            std::cout << "New Values of the Right EE Position (x,y,z) : " << "(" << rightPos[0] << ","
+                      << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
 #endif
             //if(target==true && vTarget==true){//If a target is not set and a virtual target is not generated use this for initialization
 
@@ -619,13 +621,10 @@ void simplePMPThread::computeEEPos(){
                 curPosLeftEE[0] = leftPos[0];//X Value
                 curPosLeftEE[1] = leftPos[1];//Y Value
                 curPosLeftEE[2] = leftPos[2];//Z Value
-                std::cout << "New Left Arm End Effector Position (x,y,z) : " << "(" << leftPos[0] << "," << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
 
                 curPosRightEE[0] = rightPos[0];//X Value
                 curPosRightEE[1] = rightPos[1];//Y Value
                 curPosRightEE[2] = rightPos[2];//Z Value
-                std::cout << "New Right Arm End Effector Position (x,y,z) : " << "(" << rightPos[0] << "," << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
-
 
 
             /*}else{//This is while running for virtual targets
@@ -663,14 +662,18 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
     initPosRightEE[1] = curPosRightEE[1];//227;
     initPosRightEE[2] = curPosRightEE[2]; //411;
 
-#if DEBUG_CODE>0
-    std::cout << "Initial Left Arm EE Position (x,y,z) : " << "(" << initPosLeftEE[0] << "," << initPosLeftEE[1] << "," << initPosLeftEE[2] << ")" << std::endl;
-    std::cout << "Final Left Arm Goal (x,y,z) : " << "(" << goalLEE[0] << "," << goalLEE[1] << "," << goalLEE[2] << ")" << std::endl;
-#endif
+//#if DEBUG_CODE>0
+    std::cout << "Initial Left Arm EE Position (x,y,z) : " << "(" << initPosLeftEE[0] << ","
+              << initPosLeftEE[1] << "," << initPosLeftEE[2] << ")" << std::endl;
+    std::cout << "Final Left Arm Goal (x,y,z) : " << "("
+              << goalLEE[0] << "," << goalLEE[1] << "," << goalLEE[2] << ")" << std::endl;
+//#endif
 
 //#if DEBUG_CODE>0
-    std::cout << "Initial Right Arm EE Position (x,y,z) : " << "(" << initPosRightEE[0] << "," << initPosRightEE[1] << "," << initPosRightEE[2] << ")" << std::endl;
-    std::cout << "Final Right Arm Goal (x,y,z) : " << "(" << goalREE[0] << "," << goalREE[1] << "," << goalREE[2] << ")" << std::endl;
+    std::cout << "Initial Right Arm EE Position (x,y,z) : " << "(" << initPosRightEE[0] << ","
+              << initPosRightEE[1] << "," << initPosRightEE[2] << ")" << std::endl;
+    std::cout << "Final Right Arm Goal (x,y,z) : " << "("
+              << goalREE[0] << "," << goalREE[1] << "," << goalREE[2] << ")" << std::endl;
 //#endif
 
     int time;
@@ -704,12 +707,13 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
 
         Gam = GammaDisc(time);
 
-        /*
+        //TODO Seprate the Left and Right Arm VTGS as the break moves out of the for loop
+
         //Left Arm
         //X Value
         virPosLeftEE[0] = (goalLEE[0]-initPosLeftEE[0])*Gam;
         Gam_ArrxLeft[time] = virPosLeftEE[0];
-        double *GarxLeft = Gam_ArrxLeft;//This is just a pointer
+        double *GarxLeft = Gam_ArrxLeft;
         virPosLeftEE[0] = Gamma_Int(GarxLeft,time) + initPosLeftEEIC[0];
         initPosLeftEE[0] = virPosLeftEE[0];
 
@@ -733,10 +737,10 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         //curPosition  << curPosLeftEE[0] << "		" << curPosLeftEE[1] << "		" << curPosLeftEE[2] <<endl;
         //virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
 
-//#if DEBUG_CODE>0
+#if DEBUG_CODE>0
         std::cout << "Left EE Virtual Target Position (x,y,z) #" << time << " : "
                   << "(" << virPosLeftEE[0] << "," << virPosLeftEE[1] << "," << virPosLeftEE[2] << ")" << std::endl;
-//#endif
+#endif
 
         //forceFieldLeft = computeForceFieldLeft(curPosLeftEE,initPosLeftEE);//here initPosLeftEE is actually the virtual target
         //computeTorqueLeft(forceFieldLeft);
@@ -760,26 +764,24 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
             vTarget = true; //Virtual Target is Valid
         }
 
-*/
-
 
         //Right Arm
         //X Value
         virPosRightEE[0] = (goalREE[0]-initPosRightEE[0])*Gam;
         Gam_ArrxRight[time] = virPosRightEE[0];
-        double *GarxRight = Gam_ArrxRight;//This is just a pointer
+        double *GarxRight = Gam_ArrxRight;
         virPosRightEE[0] = Gamma_Int(GarxRight,time) + initPosRightEEIC[0];
         initPosRightEE[0] = virPosRightEE[0];
 
         //Y Value
-        virPosRightEE[1] = (goalLEE[1]-initPosRightEE[1])*Gam;
+        virPosRightEE[1] = (goalREE[1]-initPosRightEE[1])*Gam;
         Gam_ArryRight[time] = virPosRightEE[1];
         double *GaryRight = Gam_ArryRight;
         virPosRightEE[1] = Gamma_Int(GaryRight,time) + initPosRightEEIC[1];
         initPosRightEE[1] = virPosRightEE[1];
 
         //Z Value
-        virPosRightEE[2] = (goalLEE[2]-initPosRightEE[2])*Gam;
+        virPosRightEE[2] = (goalREE[2]-initPosRightEE[2])*Gam;
         Gam_ArrzRight[time] = virPosRightEE[2];
         double *GarzRight = Gam_ArrzRight;
         virPosRightEE[2] = Gamma_Int(GarzRight,time) + initPosRightEEIC[2];
@@ -791,10 +793,10 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         //curPosition  << curPosRightEE[0] << "		" << curPosRightEE[1] << "		" << curPosRightEE[2] <<endl;
         //virTarget  << initPosRightEE[0] << "		" << initPosRightEE[1] << "		" << initPosRightEE[2] <<endl;
 
-//#if DEBUG_CODE>0
+#if DEBUG_CODE>0
         std::cout << "Right EE Virtual Target Position (x,y,z) #" << time << " : "
                   << "(" << virPosRightEE[0] << "," << virPosRightEE[1] << "," << virPosRightEE[2] << ")" << std::endl;
-//#endif
+#endif
 
         //forceFieldRight = computeForceFieldRight(curPosRightEE,initPosRightEE);//here initPosRightEE is actually the virtual target
         //computeTorqueRight(forceFieldRight);
