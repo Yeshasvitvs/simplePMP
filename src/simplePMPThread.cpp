@@ -152,18 +152,18 @@ void simplePMPThread::init(){
     admitRight.assign(7,0);
 
     //Torso Admittance Values
-    admitTorso.at(0) = 1;//KOMP_WAISZT;
-    admitTorso.at(1) = 1;
-    admitTorso.at(2) = 1;//KOMP_WAISZT2;
+    admitTorso.at(0) = 0.6;//KOMP_WAISZT;
+    admitTorso.at(1) = 0;
+    admitTorso.at(2) = 0.5;//KOMP_WAISZT2;
 
     //Left Arm Admittance Values
-    admitLeft.at(0) = 1.5;//0.09
-    admitLeft.at(1) = 1.5;
-    admitLeft.at(2) = 1.5;
-    admitLeft.at(3) = 1.5;
-    admitLeft.at(4) = 2;
-    admitLeft.at(5) = 2;
-    admitLeft.at(6) = 2;
+    admitLeft.at(0) = 2.8;//0.09
+    admitLeft.at(1) = 0.05;
+    admitLeft.at(2) = 2;
+    admitLeft.at(3) = 2.5;
+    admitLeft.at(4) = 1;
+    admitLeft.at(5) = 1;
+    admitLeft.at(6) = 1;
 
     //TODO Write Right Arm Admittance Values
 
@@ -750,16 +750,16 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         //curPosition  << curPosLeftEE[0] << "		" << curPosLeftEE[1] << "		" << curPosLeftEE[2] <<endl;
         //virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
 
-//#if DEBUG_CODE>0
+#if DEBUG_CODE>0
         std::cout << "Left EE Virtual Target Position (x,y,z) #" << time << " :              "
                   << "(" << virPosLeftEE[0] << "," << virPosLeftEE[1] << "," << virPosLeftEE[2] << ")" << std::endl;
-//#endif
+#endif
 
         forceFieldLeft = computeForceFieldLeft(curPosLeftEE,initPosLeftEE);//here initPosLeftEE is actually the virtual target
         computeTorqueLeft(forceFieldLeft);
         computeJointVelLeft();
         jVel2AngleLeft(time);
-        checkEEPos();
+        //checkEEPos();
 
         //Storing The Joing Angles to the Ouput Stream File
         for(int j = 0 ; j < jAnglesLT.size() ; j++){
@@ -769,10 +769,10 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         //TODO Put this condition after the execution of the motor command and after reading the EE positions
 
         if( ( fabs((virPosLeftEE[0]-goalLEE[0])) < posErr ) && ( fabs((virPosLeftEE[1]-goalLEE[1])) < posErr ) && ( fabs((virPosLeftEE[2]-goalLEE[2])) < posErr ) ){
-//#if DEBUG_CODE>0
+#if DEBUG_CODE>0
     std::cout << "Virtual Target Position reached Left EE Goal Position approximately  (x,y,z) : ";
     std::cout << "(" << virPosLeftEE[0] << "," << virPosLeftEE[1] << "," << virPosLeftEE[2] << ")" << std::endl;
-//#endif
+#endif
             break;
         }else{
             vTarget = true; //Virtual Target is Valid
@@ -839,10 +839,10 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
     //curPosition.close();
 
     //Commanding Joint Motors
-    //cmdJointLeft();
+    cmdJointLeft();
 
     //Checking Final End Effector Position Reached
-    //checkEEPos();
+    checkEEPos();
 
 }
 
@@ -873,8 +873,8 @@ void simplePMPThread::cmdJointLeft(){
             cmdT.addString("pos");
             cmdT.addInt(j);
             cmdT.addDouble(cmdJLeft[j]);
-            //std::cout << "j value : " << j << " and Angle value : " << jAnglesLT.at(j) << std::endl;
             cmdTorsoPort.writeStrict();
+            yarp::os::Time::delay(1);
             //syncObject->clockServer.stepSimulation(syncObject->configuration.numberOfSteps);
             //syncObject->clockServer.continueSimulation();
         }
@@ -896,7 +896,7 @@ void simplePMPThread::cmdJointLeft(){
             cmdLA.addString("set");
             cmdLA.addString("pos");
             cmdLA.addInt(j-3);
-            cmdLA.addDouble(jAnglesLT.at(j));
+            cmdLA.addDouble(cmdJLeft[j]);
             //std::cout << "j value : " << j-3 << " and Angle value : " << jAnglesLT.at(j) << std::endl;
             cmdLeftArmPort.writeStrict();
             yarp::os::Time::delay(1);
@@ -1215,8 +1215,8 @@ void simplePMPThread::computeTorqueLeft(double *leftForce){
 
     //Computing the Joint Limit Force Field
     for(int i = 0; i < 10 ; i++){
-        //jLimitLeft[i] = (jAnglesMeanLeft[i] - jAnglesLT.at(i)) * JHdL[i];
-        jLimitLeft[i] = 0;
+        jLimitLeft[i] = (jAnglesMeanLeft[i] - jAnglesLT.at(i)) * JHdL[i];
+        //jLimitLeft[i] = 0;
     }
 
 #if DEBUG_CODE>0
@@ -1272,8 +1272,8 @@ void simplePMPThread::computeTorqueRight(double *rightForce){
 
     //Computing the Joint Limit Force Field
     for(int i = 0; i < 10 ; i++){
-        //jLimitRight[i] = (jAnglesMeanRight[i] - jAnglesRT.at(i)) * JHdR[i];
-        jLimitRight[i] = 0;
+        jLimitRight[i] = (jAnglesMeanRight[i] - jAnglesRT.at(i)) * JHdR[i];
+        //jLimitRight[i] = 0;
     }
 
 #if DEBUG_CODE>0
@@ -1554,7 +1554,6 @@ void simplePMPThread::grasp(){
             cmdG.addInt(j);
             cmdG.addDouble(cmdGrasp.at(j));
             cmdGraspPort.writeStrict();
-
             yarp::os::Time::delay(40);
 
         }
