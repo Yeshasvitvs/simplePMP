@@ -108,8 +108,9 @@ public:
 
     armUtils(const std::string _arm);
     ~armUtils();
-    yarp::sig::Vector getEEPos(std::vector<double> qJoints);
-    std::vector<double> getJacobian();
+    yarp::sig::Vector getEEPos(std::vector<double> &_qJoints);
+    std::vector<double> getJacobian(std::vector<double> &_qJoints);
+    void setJAngles(std::vector<double> &_qJoints);
 
 };
 
