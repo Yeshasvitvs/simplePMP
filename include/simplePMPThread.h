@@ -111,9 +111,9 @@ private:
     double virPosLeftEE[3];
     double virPosRightEE[3];
 
-    //Goal Position 3D coordinates - x,y,z
-    double goalLEE[3];
-    double goalREE[3];
+    //tar Position 3D coordinates - x,y,z
+    double tarLEE[3];
+    double tarREE[3];
 
     //TODO Modify these variables to be more efficient
     double Gam_ArrxLeft[ITERATION], Gam_ArryLeft[ITERATION], Gam_ArrzLeft[ITERATION];
@@ -193,8 +193,6 @@ public:
 
       //Joint Manual Initialization
       void initializeJoints();
-      void initializeJointsLeft();
-      void initializeJointRight();
 
       //Setting Joint Mean Angles
       void setJAnglesMean();
@@ -213,8 +211,6 @@ public:
       //Joint Torque Computation
       void computeTorqueLeft(double *leftForce);
       void computeTorqueRight(double *rightForce);
-
-
 
       //Joint Velocity Computation
       void computeJointVelLeft();
