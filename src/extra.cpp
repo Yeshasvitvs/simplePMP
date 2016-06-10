@@ -1,3 +1,48 @@
+/*
+#if DEBUG_CODE>0
+        //Output Streams Files
+        //virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
+        //computeEEPos(); //Computing the End Effector Positions
+        //curPosition  << curPosLeftEE[0] << "		" << curPosLeftEE[1] << "		" << curPosLeftEE[2] <<endl;
+        //virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
+#endif
+
+
+
+#if DEBUG_CODE>0
+        //Storing The Joing Angles to the Ouput Stream File
+        for(int j = 0 ; j < jAnglesLT.size() ; j++){
+                    jointsLoc << jAnglesLT.at(j) <<"		";}
+                jointsLoc<<endl;
+#endif
+
+
+#if DEBUG_CODE>0
+        //Output Streams Files
+        //virTarget  << initPosRightEE[0] << "		" << initPosRightEE[1] << "		" << initPosRightEE[2] <<endl;
+        //computeEEPos(); //Computing the End Effector Positions
+        //curPosition  << curPosRightEE[0] << "		" << curPosRightEE[1] << "		" << curPosRightEE[2] <<endl;
+        //virTarget  << initPosRightEE[0] << "		" << initPosRightEE[1] << "		" << initPosRightEE[2] <<endl;
+#endif
+
+#if DEBUG_CODE>0
+        //Storing The Joing Angles to the Ouput Stream File
+        for(int j = 0 ; j < jAnglesRT.size() ; j++){
+                    jointsLoc << jAnglesRT.at(j) <<"		";}
+                jointsLoc<<endl;
+#endif
+
+
+#if DEBUG_CODE>0
+    //virTarget.close();
+    //curPosition.close();
+#endif
+
+
+
+*/
+
+
 //printf ("Adjusting Compliances 0 \n");
 //KFORCE=0.0094;//0.06;//0.005 // 0.0094
 //        ITERATION=4000;

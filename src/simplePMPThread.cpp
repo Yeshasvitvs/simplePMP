@@ -157,7 +157,7 @@ void simplePMPThread::init(){
     //Gazebo Synchronization
     //gzSync();
 
-    armName = "left"; //TODO: Get this form the config file to decide which arm to move
+    armName = "right"; //TODO: Get this form the config file to decide which arm to move
     armLeft = new armUtils("left");
     armRight = new armUtils("right");
 
@@ -356,7 +356,7 @@ void simplePMPThread::init(){
 
 #if DEBUG_CODE>0
     //Read the Joint Values from Gazebo in Degrees
-    readJoints();
+    //readJoints();
 
     //Joint Value Initialization in Radians
     //initializeJoints();
@@ -463,30 +463,31 @@ void simplePMPThread::getTarget(){ //TODO Make this reply with OK command using 
 void simplePMPThread::setTarget(){
 
 #if DEBUG_CODE>0
-        std::cout << "Using hard coded Targets..." << std::endl;
+    std::cout << "Using hard coded Targets..." << std::endl;
 #endif
-        if(armName == "left" || armName == "lr"){
-            //Left Arm
-            tarLEE[0] = -0.25; //y direction positive towards left of icub 1000//-1000
-            tarLEE[1] = -0.1;// x direction  negative front wards -1000
-            tarLEE[2] = 0.3;//z upwards postive - This is Changing X Position? -1000
 
-            target = true;
+    if(armName == "left" || armName == "lr"){
+        //Left Arm
+        tarLEE[0] = -0.25; //y direction positive towards left of icub 1000//-1000
+        tarLEE[1] = -0.1;// x direction  negative front wards -1000
+        tarLEE[2] = 0.3;//z upwards postive - This is Changing X Position? -1000
+
+        target = true;
 #if DEBUG_CODE>0
-    std::cout << "Acquired Left Arm Target (x,y,z) : " << "(" << tarLEE[0] << "," << tarLEE[1] << "," << tarLEE[2] << ")" << std::endl;
+std::cout << "Acquired Left Arm Target (x,y,z) : " << "(" << tarLEE[0] << "," << tarLEE[1] << "," << tarLEE[2] << ")" << std::endl;
 #endif
-        }else if(armName == "right" || armName == "lr"){
+    }else if(armName == "right" || armName == "lr"){
 
-            //Right Arm
-            tarREE[0] = -0.25; //y direction positive towards left of icub 1000//-1000
-            tarREE[1] = 0.1;// x direction  negative front wards -1000
-            tarREE[2] = 0.3;//z upwards postive - This is Changing X Position? -1000
+        //Right Arm
+        tarREE[0] = -0.25; //y direction positive towards left of icub 1000//-1000
+        tarREE[1] = 0.1;// x direction  negative front wards -1000
+        tarREE[2] = 0.3;//z upwards postive - This is Changing X Position? -1000
 
-            target = true;
+        target = true;
 #if DEBUG_CODE>0
-    std::cout << "Acquired Right Arm Target (x,y,z) : " << "(" << tarREE[0] << "," << tarREE[1] << "," << tarREE[2] << ")" << std::endl;
+std::cout << "Acquired Right Arm Target (x,y,z) : " << "(" << tarREE[0] << "," << tarREE[1] << "," << tarREE[2] << ")" << std::endl;
 #endif
-        }
+    }
 }
 
 void simplePMPThread::readJoints(){
@@ -610,65 +611,71 @@ void simplePMPThread::readJoints(){
 void simplePMPThread::readEE(){
 
 #if DEBUG_CODE>0
-            std::cout << "Reading End Effector Position and Orientation using Cartesian Control Interface" << std::endl;
+    std::cout << "Reading End Effector Position and Orientation using Cartesian Control Interface" << std::endl;
 #endif
 
-    //Left Arm EE Coordinates
-    if(!yarp::os::Network::isConnected("/icubGazeboSim/cartesianController/left_arm_no_hand/state:o",leftEEPort.getName().c_str())){
-        yarp::os::Network::connect("/icubGazeboSim/cartesianController/left_arm_no_hand/state:o",leftEEPort.getName().c_str());
-        yarp::os::Bottle *eePos;
-        eePos = leftEEPort.read();
-        if(eePos!=NULL){
-#if DEBUG_CODE>0
-            std::cout << "End Effector Position and Orientation from Left Arm read..." << std::endl;
-            std::cout << "Size of the EE Position and Orientation Bottle: " << eePos->size() << std::endl;
-            std::cout << "The Position and Orientation values read to the Bottle are: " << eePos->toString().c_str() << std::endl;
-#endif
-            //Noting only the position values of the End Effector
-            initPosLeftEE[0] = eePos->get(0).asDouble(); // X Value
-            initPosLeftEE[1] = eePos->get(1).asDouble(); // Y Value
-            initPosLeftEE[2] = eePos->get(2).asDouble(); // Z Value
+    if(armName == "left" || armName == "lr"){
 
-            std::cout << "Initial Position of Left End Effector (x,y,z) : " << "(" << initPosLeftEE[0] << "," << initPosLeftEE[1] << "," << initPosLeftEE[2] << ")" << std::endl;
+        //Left Arm End Effector Coordinates
+        if(!yarp::os::Network::isConnected("/icubGazeboSim/cartesianController/left_arm_no_hand/state:o",leftEEPort.getName().c_str())){
+            yarp::os::Network::connect("/icubGazeboSim/cartesianController/left_arm_no_hand/state:o",leftEEPort.getName().c_str());
+            yarp::os::Bottle *eePos;
+            eePos = leftEEPort.read();
+            if(eePos!=NULL){
+    #if DEBUG_CODE>0
+                std::cout << "End Effector Position and Orientation from Left Arm read..." << std::endl;
+                std::cout << "Size of the EE Position and Orientation Bottle: " << eePos->size() << std::endl;
+                std::cout << "The Position and Orientation values read to the Bottle are: " << eePos->toString().c_str() << std::endl;
+    #endif
+                //Noting only the position values of the End Effector
+                initPosLeftEE[0] = eePos->get(0).asDouble(); // X Value
+                initPosLeftEE[1] = eePos->get(1).asDouble(); // Y Value
+                initPosLeftEE[2] = eePos->get(2).asDouble(); // Z Value
 
+                std::cout << "Initial Position of Left End Effector (x,y,z) : " << "(" << initPosLeftEE[0] << "," << initPosLeftEE[1] << "," << initPosLeftEE[2] << ")" << std::endl;
+
+            }
+        }else{
+            yarp::os::Network::disconnect("/icubGazeboSim/cartesianController/left_arm_no_hand/state:o",leftEEPort.getName().c_str());
+    #if DEBUG_CODE>0
+            std::cout << " Disconnected /icubGazeboSim/cartesianController/left_arm_no_hand/state:o and " << leftEEPort.getName().c_str() << std::endl;
+    #endif
         }
-    }else{
-        yarp::os::Network::disconnect("/icubGazeboSim/cartesianController/left_arm_no_hand/state:o",leftEEPort.getName().c_str());
-#if DEBUG_CODE>0
-        std::cout << " Disconnected /icubGazeboSim/cartesianController/left_arm_no_hand/state:o and " << leftEEPort.getName().c_str() << std::endl;
-#endif
-    }
 
-    //Right Arm EE Coordinates
-    if(!yarp::os::Network::isConnected("/icubGazeboSim/cartesianController/right_arm_no_hand/state:o",rightEEPort.getName().c_str())){
-        yarp::os::Network::connect("/icubGazeboSim/cartesianController/right_arm_no_hand/state:o",rightEEPort.getName().c_str());
-        yarp::os::Bottle *eePos;
-        eePos = rightEEPort.read();
-        if(eePos!=NULL){
-#if DEBUG_CODE>0
-            std::cout << "End Effector Position and Orientation from Right Hand read..." << std::endl;
-            std::cout << "Size of the EE Position and Orientation Bottle: " << eePos->size() << std::endl;
-            std::cout << "The Position and Orientation values read to the Bottle are: " << eePos->toString().c_str() << std::endl;
-#endif
-            //Noting only the position values of the End Effector
-            initPosRightEE[0] = eePos->get(0).asDouble(); // X Value
-            initPosRightEE[1] = eePos->get(1).asDouble(); // Y Value
-            initPosRightEE[2] = eePos->get(2).asDouble(); // Z Value
+    }else if(armName== "right" || armName == "lr"){
 
-            std::cout << "Initial Position of Right End Effector (x,y,z) : " << "(" << initPosRightEE[0] << "," << initPosRightEE[1] << "," << initPosRightEE[2] << ")" << std::endl;
+        //Right Arm End Effector Coordinates
+        if(!yarp::os::Network::isConnected("/icubGazeboSim/cartesianController/right_arm_no_hand/state:o",rightEEPort.getName().c_str())){
+            yarp::os::Network::connect("/icubGazeboSim/cartesianController/right_arm_no_hand/state:o",rightEEPort.getName().c_str());
+            yarp::os::Bottle *eePos;
+            eePos = rightEEPort.read();
+            if(eePos!=NULL){
+    #if DEBUG_CODE>0
+                std::cout << "End Effector Position and Orientation from Right Hand read..." << std::endl;
+                std::cout << "Size of the EE Position and Orientation Bottle: " << eePos->size() << std::endl;
+                std::cout << "The Position and Orientation values read to the Bottle are: " << eePos->toString().c_str() << std::endl;
+    #endif
+                //Noting only the position values of the End Effector
+                initPosRightEE[0] = eePos->get(0).asDouble(); // X Value
+                initPosRightEE[1] = eePos->get(1).asDouble(); // Y Value
+                initPosRightEE[2] = eePos->get(2).asDouble(); // Z Value
+
+                std::cout << "Initial Position of Right End Effector (x,y,z) : " << "(" << initPosRightEE[0] << "," << initPosRightEE[1] << "," << initPosRightEE[2] << ")" << std::endl;
 
 
+            }
+        }else{
+            yarp::os::Network::disconnect("/icubGazeboSim/cartesianController/right_arm_no_hand/state:o",rightEEPort.getName().c_str());
+    #if DEBUG_CODE>0
+            std::cout << " Disconnected /icubGazeboSim/cartesianController/right_arm_no_hand/state:o and " << rightEEPort.getName().c_str() << std::endl;
+    #endif
         }
-    }else{
-        yarp::os::Network::disconnect("/icubGazeboSim/cartesianController/right_arm_no_hand/state:o",rightEEPort.getName().c_str());
-#if DEBUG_CODE>0
-        std::cout << " Disconnected /icubGazeboSim/cartesianController/right_arm_no_hand/state:o and " << rightEEPort.getName().c_str() << std::endl;
-#endif
     }
-
 }
 
 void simplePMPThread::checkEEPos(){
+
+    if(armName == "left" || armName == "lr"){
 
 #if DEBUG_CODE>0
     std::cout << "Commanded Joint Angles in Degrees :               " << " " <<  jAnglesLT.at(0)*CTRL_RAD2DEG
@@ -702,93 +709,110 @@ void simplePMPThread::checkEEPos(){
               << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
 #endif
 
-    //Right Arm End Effector Position Computation
-    //std::cout << "Size of Computed Joint Angle Commands : " << jAnglesRT.size() << std::endl;
-    for(int a=0; a < jAnglesRT.size() ; a++){
-        rightAngles[a] = jAnglesRT.at(a)*CTRL_RAD2DEG;
-    }
+    }else if(armName == "right" || armName == "lr"){
 
-    //computeFKRight(rightPos,rightAngles); //This Uses Utils.h File
+#if DEBUG_CODE>0
+    std::cout << "Commanded Joint Angles in Degrees :               " << " " <<  jAnglesRT.at(0)*CTRL_RAD2DEG
+              << " " << jAnglesRT.at(1)*CTRL_RAD2DEG
+              << " " << jAnglesRT.at(2)*CTRL_RAD2DEG
+              << " " << jAnglesRT.at(3)*CTRL_RAD2DEG
+              << " " << jAnglesRT.at(4)*CTRL_RAD2DEG
+              << " " << jAnglesRT.at(5)*CTRL_RAD2DEG
+              << " " << jAnglesRT.at(6)*CTRL_RAD2DEG
+              << " " << jAnglesRT.at(7)*CTRL_RAD2DEG
+              << " " << jAnglesRT.at(8)*CTRL_RAD2DEG
+              << " " << jAnglesRT.at(9)*CTRL_RAD2DEG << std::endl;
+#endif
 
-    yarp::sig::Vector rpos; //Temp Variable
-    rpos = armRight->getEEPos(jAnglesRT);
-    rightPos[0] = rpos[0];
-    rightPos[1] = rpos[1];
-    rightPos[2] = rpos[2];
+        //Right Arm End Effector Position Computation
+        //std::cout << "Size of Computed Joint Angle Commands : " << jAnglesRT.size() << std::endl;
+        for(int a=0; a < jAnglesRT.size() ; a++){
+            rightAngles[a] = jAnglesRT.at(a)*CTRL_RAD2DEG;
+        }
+
+        //computeFKRight(rightPos,rightAngles); //This Uses Utils.h File
+
+        yarp::sig::Vector rpos; //Temp Variable
+        rpos = armRight->getEEPos(jAnglesRT);
+        rightPos[0] = rpos[0];
+        rightPos[1] = rpos[1];
+        rightPos[2] = rpos[2];
 
 #if DEBUG_CODE>0
     std::cout << "Values of the Right Arm EE Position to be attained (x,y,z) : " << "(" << rightPos[0] << ","
               << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
 #endif
-
+    }
 }
 
 void simplePMPThread::computeEEPos(){
 
 #if DEBUG_CODE>0
-            std::cout << "Computing End Effector Position and Orientation using Forward Kinematics of iCub Robot from iKin Library" << std::endl;
+    std::cout << "Computing End Effector Position and Orientation using Forward Kinematics of iCub Robot from iKin Library" << std::endl;
 #endif
 
-            //Left End Effector Position Computation
+    if(armName == "left" || armName == "lr"){
+
+        //Left End Effector Position Computation
 #if DEBUG_CODE>0
-            std::cout << "Computing Forward Kinematics of Left Arm + Torso Configuration..." << std::endl;
+        std::cout << "Computing Forward Kinematics of Left Arm + Torso Configuration..." << std::endl;
 #endif
-            for(int a=0; a < jAnglesLT.size() ; a++){
-                leftAngles[a] = jAnglesLT.at(a);
-            }
-
-#if DEBUG_CODE>0
-            std::cout << "Size of Joint Angles Received : " << sizeof(leftAngles)/sizeof(double) << std::endl;
-#endif
-            //computeFKLeft(leftPos,leftAngles); //This Uses Utils.h File
-
-            yarp::sig::Vector lpos; //Temp Variable
-            lpos = armLeft->getEEPos(jAnglesLT);
-            leftPos[0] = lpos[0];
-            leftPos[1] = lpos[1];
-            leftPos[2] = lpos[2];
+        for(int a=0; a < jAnglesLT.size() ; a++){
+            leftAngles[a] = jAnglesLT.at(a);
+        }
 
 #if DEBUG_CODE>0
-            std::cout << "New Values of the Left EE Position (x,y,z) : " << "(" << leftPos[0] << ","
-                      << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
+        std::cout << "Size of Joint Angles Received : " << sizeof(leftAngles)/sizeof(double) << std::endl;
 #endif
+        //computeFKLeft(leftPos,leftAngles); //This Uses Utils.h File
 
-
-            //Right End Effector Position Computation
-#if DEBUG_CODE>0
-            std::cout << "Computing Forward Kinematics of Right Arm + Torso Configuration..." << std::endl;
-#endif
-
-            for(int a=0; a < jAnglesRT.size() ; a++){
-                rightAngles[a] = jAnglesRT.at(a);
-            }
+        yarp::sig::Vector lpos; //Temp Variable
+        lpos = armLeft->getEEPos(jAnglesLT);
+        leftPos[0] = lpos[0];
+        leftPos[1] = lpos[1];
+        leftPos[2] = lpos[2];
 
 #if DEBUG_CODE>0
-            std::cout << "Size of Joint Angles Received : " << sizeof(rightAngles)/sizeof(double) << std::endl;
+        std::cout << "New Values of the Left EE Position (x,y,z) : " << "(" << leftPos[0] << ","
+                  << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
 #endif
-            //computeFKRight(rightPos,rightAngles); //This Uses Utils.h File
 
-            yarp::sig::Vector rpos; //Temp Variable
-            rpos = armRight->getEEPos(jAnglesRT);
-            rightPos[0] = rpos[0];
-            rightPos[1] = rpos[1];
-            rightPos[2] = rpos[2];
+        curPosLeftEE[0] = leftPos[0];//X Value
+        curPosLeftEE[1] = leftPos[1];//Y Value
+        curPosLeftEE[2] = leftPos[2];//Z Value
+
+    }else if(armName == "right" || armName == "lr"){
+
+        //Right End Effector Position Computation
+#if DEBUG_CODE>0
+        std::cout << "Computing Forward Kinematics of Right Arm + Torso Configuration..." << std::endl;
+#endif
+
+        for(int a=0; a < jAnglesRT.size() ; a++){
+            rightAngles[a] = jAnglesRT.at(a);
+        }
 
 #if DEBUG_CODE>0
-            std::cout << "New Values of the Right EE Position (x,y,z) : " << "(" << rightPos[0] << ","
-                      << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
+        std::cout << "Size of Joint Angles Received : " << sizeof(rightAngles)/sizeof(double) << std::endl;
+#endif
+        //computeFKRight(rightPos,rightAngles); //This Uses Utils.h File
+
+        yarp::sig::Vector rpos; //Temp Variable
+        rpos = armRight->getEEPos(jAnglesRT);
+        rightPos[0] = rpos[0];
+        rightPos[1] = rpos[1];
+        rightPos[2] = rpos[2];
+
+#if DEBUG_CODE>0
+        std::cout << "New Values of the Right EE Position (x,y,z) : " << "(" << rightPos[0] << ","
+                  << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
 #endif
 
-         //std::cout << "Setting Initial End Effector Position..." << std::endl;
-         curPosLeftEE[0] = leftPos[0];//X Value
-         curPosLeftEE[1] = leftPos[1];//Y Value
-         curPosLeftEE[2] = leftPos[2];//Z Value
+        curPosRightEE[0] = rightPos[0];//X Value
+        curPosRightEE[1] = rightPos[1];//Y Value
+        curPosRightEE[2] = rightPos[2];//Z Value
 
-         curPosRightEE[0] = rightPos[0];//X Value
-         curPosRightEE[1] = rightPos[1];//Y Value
-         curPosRightEE[2] = rightPos[2];//Z Value
-
-
+    }
 }
 
 
@@ -798,22 +822,26 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
     std::cout << "Running Virtual Trajectory Generation System for the Acquired Target Position..." << std::endl;
 //#endif
 
-    readJoints();
+    readJoints(); //Reading Joint Values
 
 #if DEBUG_CODE>0
-    //initializeJointsLeft();
-    //initializeJointRight();
+    //initializeJoints();
 #endif
 
-    computeEEPos();
+    computeEEPos(); //Computing End Effector Position Corresponding to Initially Read Joint Values
 
-    initPosLeftEE[0] = curPosLeftEE[0];
-    initPosLeftEE[1] = curPosLeftEE[1];
-    initPosLeftEE[2] = curPosLeftEE[2];
+    //Local Variables
+    int time;
+    double Gam;
+    double xoff=1, yoff=1 , zoff=1; //Offsets
 
-    initPosRightEE[0] = curPosRightEE[0];
-    initPosRightEE[1] = curPosRightEE[1];
-    initPosRightEE[2] = curPosRightEE[2];
+    //Storing the Initial Values of End Effector
+
+    if(armName == "left" || armName == "lr"){
+
+        initPosLeftEE[0] = curPosLeftEE[0];
+        initPosLeftEE[1] = curPosLeftEE[1];
+        initPosLeftEE[2] = curPosLeftEE[2];
 
 #if DEBUG_CODE>0
     std::cout << "Initial Left Arm EE Position (x,y,z) : " << "(" << initPosLeftEE[0] << ","
@@ -822,6 +850,25 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
               << tarLEE[0] << "," << tarLEE[1] << "," << tarLEE[2] << ")" << std::endl;
 #endif
 
+        initPosLeftEEIC[0] = initPosLeftEE[0];
+        initPosLeftEEIC[1] = initPosLeftEE[1];
+        initPosLeftEEIC[2] = initPosLeftEE[2];
+
+#if DEBUG_CODE>0
+        //Storing the Initial Values of Joint Angles
+        initJAnglesLT.assign(jAnglesLT.size(),0);
+        for(int j = 0 ; j < jAnglesLT.size() ; j++){
+            initJAnglesLT.at(j) = jAnglesLT.at(j);
+        }
+#endif
+
+    }else if(armName == "right" || armName == "lr"){
+
+
+        initPosRightEE[0] = curPosRightEE[0];
+        initPosRightEE[1] = curPosRightEE[1];
+        initPosRightEE[2] = curPosRightEE[2];
+
 #if DEBUG_CODE>0
     std::cout << "Initial Right Arm EE Position (x,y,z) : " << "(" << initPosRightEE[0] << ","
               << initPosRightEE[1] << "," << initPosRightEE[2] << ")" << std::endl;
@@ -829,69 +876,50 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
               << tarREE[0] << "," << tarREE[1] << "," << tarREE[2] << ")" << std::endl;
 #endif
 
-    //Local Variables
-    int time;
-    double Gam;
-    double xoff=1, yoff=1 , zoff=1; //Offsets
+        initPosRightEEIC[0] = initPosRightEE[0];
+        initPosRightEEIC[1] = initPosRightEE[1];
+        initPosRightEEIC[2] = initPosRightEE[2];
 
-    //Storing the Initial Values of End Effector
-    initPosLeftEEIC[0] = initPosLeftEE[0];
-    initPosLeftEEIC[1] = initPosLeftEE[1];
-    initPosLeftEEIC[2] = initPosLeftEE[2];
+#if DEBUG_CODE>0
+        //Storing the Initial Values of Joint Angles
+        initJAnglesRT.assign(jAnglesRT.size(),0);
 
-    initPosRightEEIC[0] = initPosRightEE[0];
-    initPosRightEEIC[1] = initPosRightEE[1];
-    initPosRightEEIC[2] = initPosRightEE[2];
+        for(int j = 0 ; j < jAnglesRT.size() ; j++){
+            initJAnglesRT.at(j) = jAnglesRT.at(j);
+        }
+#endif
 
-    //Storing the Initial Values of Joint Angles
-    initJAnglesLT.assign(jAnglesLT.size(),0);
-    initJAnglesRT.assign(jAnglesRT.size(),0);
 
-    for(int j = 0 ; j < jAnglesLT.size() ; j++){
-        initJAnglesLT.at(j) = jAnglesLT.at(j);
     }
 
-    for(int j = 0 ; j < jAnglesRT.size() ; j++){
-        initJAnglesRT.at(j) = jAnglesRT.at(j);
-    }
-
-    //TODO Use offset values for the tar
 
     for(time=0; time<ITERATION ; time++){// 2000 Incremental Steps of Size 1
 
         Gam = GammaDisc(time);
 
-        //TODO Seprate the Left and Right Arm VTGS as the break moves out of the for loop
+        if(armName == "left" || armName == "lr"){
 
-        //Left Arm Virtual Trajectory
-        //X Value
-        virPosLeftEE[0] = (tarLEE[0]-initPosLeftEE[0])*Gam;
-        Gam_ArrxLeft[time] = virPosLeftEE[0];
-        double *GarxLeft = Gam_ArrxLeft;
-        virPosLeftEE[0] = Gamma_Int(GarxLeft,time) + initPosLeftEEIC[0];
-        initPosLeftEE[0] = virPosLeftEE[0];
+            //Left Arm Virtual Trajectory
+            //X Value
+            virPosLeftEE[0] = (tarLEE[0]-initPosLeftEE[0])*Gam;
+            Gam_ArrxLeft[time] = virPosLeftEE[0];
+            double *GarxLeft = Gam_ArrxLeft;
+            virPosLeftEE[0] = Gamma_Int(GarxLeft,time) + initPosLeftEEIC[0];
+            initPosLeftEE[0] = virPosLeftEE[0];
 
-        //Y Value
-        virPosLeftEE[1] = (tarLEE[1]-initPosLeftEE[1])*Gam;
-        Gam_ArryLeft[time] = virPosLeftEE[1];
-        double *GaryLeft = Gam_ArryLeft;
-        virPosLeftEE[1] = Gamma_Int(GaryLeft,time) + initPosLeftEEIC[1];
-        initPosLeftEE[1] = virPosLeftEE[1];
+            //Y Value
+            virPosLeftEE[1] = (tarLEE[1]-initPosLeftEE[1])*Gam;
+            Gam_ArryLeft[time] = virPosLeftEE[1];
+            double *GaryLeft = Gam_ArryLeft;
+            virPosLeftEE[1] = Gamma_Int(GaryLeft,time) + initPosLeftEEIC[1];
+            initPosLeftEE[1] = virPosLeftEE[1];
 
-        //Z Value
-        virPosLeftEE[2] = (tarLEE[2]-initPosLeftEE[2])*Gam;
-        Gam_ArrzLeft[time] = virPosLeftEE[2];
-        double *GarzLeft = Gam_ArrzLeft;
-        virPosLeftEE[2] = Gamma_Int(GarzLeft,time) + initPosLeftEEIC[2];
-        initPosLeftEE[2] = virPosLeftEE[2];
-
-#if DEBUG_CODE>0
-        //Output Streams Files
-        //virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
-        //computeEEPos(); //Computing the End Effector Positions
-        //curPosition  << curPosLeftEE[0] << "		" << curPosLeftEE[1] << "		" << curPosLeftEE[2] <<endl;
-        //virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
-#endif
+            //Z Value
+            virPosLeftEE[2] = (tarLEE[2]-initPosLeftEE[2])*Gam;
+            Gam_ArrzLeft[time] = virPosLeftEE[2];
+            double *GarzLeft = Gam_ArrzLeft;
+            virPosLeftEE[2] = Gamma_Int(GarzLeft,time) + initPosLeftEEIC[2];
+            initPosLeftEE[2] = virPosLeftEE[2];
 
 #if DEBUG_CODE>0
         std::cout << "Left EE Virtual Target Position (x,y,z) #" << time << " :              "
@@ -906,60 +934,43 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
 #if DEBUG_CODE>0
         checkEEPos(); // Checking the End Effector Value That Will Be Reached With Each New Joint Configuration
 #endif
+        //Condition To Break the VTGS After Position Threshold Error is Reached
+        if( ( fabs((virPosLeftEE[0]-tarLEE[0])) < posErr ) &&
+            ( fabs((virPosLeftEE[1]-tarLEE[1])) < posErr ) &&
+            ( fabs((virPosLeftEE[2]-tarLEE[2])) < posErr ) ){
 
-#if DEBUG_CODE>0
-        //Storing The Joing Angles to the Ouput Stream File
-        for(int j = 0 ; j < jAnglesLT.size() ; j++){
-                    jointsLoc << jAnglesLT.at(j) <<"		";}
-                jointsLoc<<endl;
-#endif
+ #if DEBUG_CODE>0
+     std::cout << "Virtual Target Position reached Left EE tar Position approximately  (x,y,z) : ";
+     std::cout << "(" << virPosLeftEE[0] << "," << virPosLeftEE[1] << "," << virPosLeftEE[2] << ")" << std::endl;
+ #endif
+             break;
+         }else{
+             vTarget = true; //Virtual Target is Valid
+         }
 
-       //Condition To Break the VTGS After Position Threshold Error is Reached
-       if( ( fabs((virPosLeftEE[0]-tarLEE[0])) < posErr ) &&
-           ( fabs((virPosLeftEE[1]-tarLEE[1])) < posErr ) &&
-           ( fabs((virPosLeftEE[2]-tarLEE[2])) < posErr ) ){
+        }else if(armName == "right" || armName == "lr"){
 
-#if DEBUG_CODE>0
-    std::cout << "Virtual Target Position reached Left EE tar Position approximately  (x,y,z) : ";
-    std::cout << "(" << virPosLeftEE[0] << "," << virPosLeftEE[1] << "," << virPosLeftEE[2] << ")" << std::endl;
-#endif
-            break;
-        }else{
-            vTarget = true; //Virtual Target is Valid
-        }
+            //Right Arm Virtual Trajectory
+            //X Value
+            virPosRightEE[0] = (tarREE[0]-initPosRightEE[0])*Gam;
+            Gam_ArrxRight[time] = virPosRightEE[0];
+            double *GarxRight = Gam_ArrxRight;
+            virPosRightEE[0] = Gamma_Int(GarxRight,time) + initPosRightEEIC[0];
+            initPosRightEE[0] = virPosRightEE[0];
 
+            //Y Value
+            virPosRightEE[1] = (tarREE[1]-initPosRightEE[1])*Gam;
+            Gam_ArryRight[time] = virPosRightEE[1];
+            double *GaryRight = Gam_ArryRight;
+            virPosRightEE[1] = Gamma_Int(GaryRight,time) + initPosRightEEIC[1];
+            initPosRightEE[1] = virPosRightEE[1];
 
-
-        //Right Arm Virtual Trajectory
-        //X Value
-        virPosRightEE[0] = (tarREE[0]-initPosRightEE[0])*Gam;
-        Gam_ArrxRight[time] = virPosRightEE[0];
-        double *GarxRight = Gam_ArrxRight;
-        virPosRightEE[0] = Gamma_Int(GarxRight,time) + initPosRightEEIC[0];
-        initPosRightEE[0] = virPosRightEE[0];
-
-        //Y Value
-        virPosRightEE[1] = (tarREE[1]-initPosRightEE[1])*Gam;
-        Gam_ArryRight[time] = virPosRightEE[1];
-        double *GaryRight = Gam_ArryRight;
-        virPosRightEE[1] = Gamma_Int(GaryRight,time) + initPosRightEEIC[1];
-        initPosRightEE[1] = virPosRightEE[1];
-
-        //Z Value
-        virPosRightEE[2] = (tarREE[2]-initPosRightEE[2])*Gam;
-        Gam_ArrzRight[time] = virPosRightEE[2];
-        double *GarzRight = Gam_ArrzRight;
-        virPosRightEE[2] = Gamma_Int(GarzRight,time) + initPosRightEEIC[2];
-        initPosRightEE[2] = virPosRightEE[2];
-
-#if DEBUG_CODE>0
-        //Output Streams Files
-        //virTarget  << initPosRightEE[0] << "		" << initPosRightEE[1] << "		" << initPosRightEE[2] <<endl;
-        //computeEEPos(); //Computing the End Effector Positions
-        //curPosition  << curPosRightEE[0] << "		" << curPosRightEE[1] << "		" << curPosRightEE[2] <<endl;
-        //virTarget  << initPosRightEE[0] << "		" << initPosRightEE[1] << "		" << initPosRightEE[2] <<endl;
-#endif
-
+            //Z Value
+            virPosRightEE[2] = (tarREE[2]-initPosRightEE[2])*Gam;
+            Gam_ArrzRight[time] = virPosRightEE[2];
+            double *GarzRight = Gam_ArrzRight;
+            virPosRightEE[2] = Gamma_Int(GarzRight,time) + initPosRightEEIC[2];
+            initPosRightEE[2] = virPosRightEE[2];
 
 #if DEBUG_CODE>0
         std::cout << "Right EE Virtual Target Position (x,y,z) #" << time << " : "
@@ -989,17 +1000,20 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         }else{
             vTarget = true; //Virtual Target is Valid
         }
+        }
+    }//End of Time For Loop
 
+
+    //TODO : Not Sure if it is Better to Have one cmdJoint or two separate threads
+    if(armName == "left" || armName == "lr"){
+        //Commanding Joint Motors
+        cmdJointLeft();
+
+    }else if(armName == "right" || armName == "lr"){
+        //Commanding Joint Motors
+        cmdJointRight();
     }
 
-#if DEBUG_CODE>0
-    //virTarget.close();
-    //curPosition.close();
-#endif
-
-    //Commanding Joint Motors
-    cmdJointLeft();
-    cmdJointRight();
 
     //Checking Final End Effector Position Reached With Commanded Joint Values
     checkEEPos();
@@ -1318,24 +1332,6 @@ void simplePMPThread::jVel2AngleRight(int _time){
 
 }
 
-//This is a Single Routine for Correcting Angles of Left/Right Arm
-void simplePMPThread::correctJAngles(double *angles){
-
-    for(int j = 0 ; j < 10 ; j++){
-        int dummy = fabs(*(angles+j)/360);
-        int sign = *(angles+j)/fabs(*(angles+j));
-        if(dummy > 0){
-            if(sign > 0){//Positive Angle
-                *(angles+j) = *(angles+j)-(dummy*360);
-            }else{//Negative Angle
-                *(angles+j) = *(angles+j)+(dummy*360);
-            }
-
-        }
-    }
-}
-
-
 double* simplePMPThread::computeForceFieldLeft(double *curPos, double *tarPos){
 
 #if DEBUG_CODE>0
@@ -1527,8 +1523,8 @@ void simplePMPThread::computeJointVelRight(){
         jointVelRight.at(t) = admitTorso.at(t)*torqueRight.at(t);
     }
 
-    for(int t=0; t < 7 ; t++){
-        jointVelRight.at(t) = KOMP_JANG*torqueRight.at(t);
+    for(int t=3; t < 10 ; t++){
+        //jointVelRight.at(t) = KOMP_JANG*torqueRight.at(t);
         jointVelRight.at(t) = admitRight.at(t-3)*torqueRight.at(t);
     }
 
@@ -1652,6 +1648,24 @@ double simplePMPThread::Gamma_IntDisc(double *Gar,int n)	{
 
     return sum;
 }
+
+//This is a Single Routine for Correcting Angles of Left/Right Arm
+void simplePMPThread::correctJAngles(double *angles){
+
+    for(int j = 0 ; j < 10 ; j++){
+        int dummy = fabs(*(angles+j)/360);
+        int sign = *(angles+j)/fabs(*(angles+j));
+        if(dummy > 0){
+            if(sign > 0){//Positive Angle
+                *(angles+j) = *(angles+j)-(dummy*360);
+            }else{//Negative Angle
+                *(angles+j) = *(angles+j)+(dummy*360);
+            }
+
+        }
+    }
+}
+
 
 void simplePMPThread::grasp(){
 
