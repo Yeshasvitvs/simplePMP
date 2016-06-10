@@ -18,24 +18,6 @@ int main(int argc, char *argv[])
     //rf.setDefaultContext("simplePMP");
     rf.configure(argc,argv);
 
-    //Getting the EndEffector Position in Cartesian Space using iCub Cartesian Controller
-    /*yarp::os::Property option;
-    option.put("device","cartesiancontrollerclient");
-    option.put("remote","/icub/cartesianController/left_arm");
-    option.put("local","/PMP/left_arm");
-
-    yarp::dev::PolyDriver ClientCartCtrl(option);
-    yarp::dev::ICartesianControl *icart=NULL;
-
-    if(ClientCartCtrl.isValid()){
-        ClientCartCtrl.view(icart);
-    }else{
-        std::cout << "Device not available. Here are the known devices: " << std::endl;
-        std::cout << yarp::dev::Drivers::factory().toString().c_str() << std::endl;
-        return 1;
-    }*/
-
-
 #if DEBUG_CODE>0
     ConstString rName=rf.find("robot").asString();
     std:cout<< "Robot Name: " << rName << std::endl;
@@ -49,3 +31,25 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+//Currently Not Using Cartesian Controller
+int getCartController(){
+
+    //Getting the EndEffector Position in Cartesian Space using iCub Cartesian Controller
+    yarp::os::Property option;
+    option.put("device","cartesiancontrollerclient");
+    option.put("remote","/icub/cartesianController/left_arm");
+    option.put("local","/PMP/left_arm");
+
+    yarp::dev::PolyDriver ClientCartCtrl(option);
+    yarp::dev::ICartesianControl *icart=NULL;
+
+    if(ClientCartCtrl.isValid()){
+        ClientCartCtrl.view(icart);
+    }else{
+        std::cout << "Device not available. Here are the known devices: " << std::endl;
+        std::cout << yarp::dev::Drivers::factory().toString().c_str() << std::endl;
+        return 1;
+    }
+
+
+}

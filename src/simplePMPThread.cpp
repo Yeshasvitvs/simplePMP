@@ -27,20 +27,9 @@ simplePMPThread::~simplePMPThread(){
 
 }
 
+void simplePMPThread::gzSync(){
 
-
-void simplePMPThread::init(){
-
-#if DEBUG_CODE>0
-    std::cout << "Initializing PMP Thread..." << std::endl;
-#endif
-
-    //Initializing Joint Angle Variables
-    //memset(jAnglesLeftArm,0,7*sizeof(double));
-    //memset(jAnglesRightArm,0,7*sizeof(double));
-    //memset(jAnglesTorso,0,3*sizeof(double));
-
-    /*period = 0.001; //This is 10ms Default
+    period = 0.001; //This is 10ms Default
 
     syncObject->configuration.clientPortName = "/sync/clock:o"; //This should be the name of the clock port opened by the block
     syncObject->configuration.serverPortName = "/clock/rpc"; //This is the name of the clock port opened by gazebo yarp clock plugin
@@ -58,49 +47,14 @@ void simplePMPThread::init(){
 
     stepSize = syncObject->clockServer.getStepSize(); //This is 1 ms Default
     std::cout << "Gazebo Simulation Step Size : " << stepSize << std::endl;
-    syncObject->configuration.numberOfSteps = period/stepSize;*/
+    syncObject->configuration.numberOfSteps = period/stepSize;
 
-    armLeft = new armUtils("left");
-    armRight = new armUtils("right");
+}
 
-    RAMP_KONSTANT = 0.005;
-    t_dur = 5;
+void simplePMPThread::setJAnglesMean(){
 
-    grasped=false;//This for now can be user input
-
-    posErr = 0.00001;
-    memset(Gam_ArrxLeft,0,ITERATION*sizeof(double));
-    memset(Gam_ArryLeft,0,ITERATION*sizeof(double));
-    memset(Gam_ArrzLeft,0,ITERATION*sizeof(double));
-
-    memset(Gam_ArrxRight,0,ITERATION*sizeof(double));
-    memset(Gam_ArryRight,0,ITERATION*sizeof(double));
-    memset(Gam_ArrzRight,0,ITERATION*sizeof(double));
-
-    //Joint Angle Variables
-    memset(q1L,0,ITERATION*sizeof(double));
-    memset(q2L,0,ITERATION*sizeof(double));
-    memset(q3L,0,ITERATION*sizeof(double));
-    memset(q4L,0,ITERATION*sizeof(double));
-    memset(q5L,0,ITERATION*sizeof(double));
-    memset(q6L,0,ITERATION*sizeof(double));
-    memset(q7L,0,ITERATION*sizeof(double));
-    memset(q8L,0,ITERATION*sizeof(double));
-    memset(q9L,0,ITERATION*sizeof(double));
-    memset(q10L,0,ITERATION*sizeof(double));
-
-    memset(q1R,0,ITERATION*sizeof(double));
-    memset(q2R,0,ITERATION*sizeof(double));
-    memset(q3R,0,ITERATION*sizeof(double));
-    memset(q4R,0,ITERATION*sizeof(double));
-    memset(q5R,0,ITERATION*sizeof(double));
-    memset(q6R,0,ITERATION*sizeof(double));
-    memset(q7R,0,ITERATION*sizeof(double));
-    memset(q8R,0,ITERATION*sizeof(double));
-    memset(q9R,0,ITERATION*sizeof(double));
-    memset(q10R,0,ITERATION*sizeof(double));
-
-    //Mean Joint Angles
+    //TODO Use iKin Library to Set the Mean Values
+    //Mean Joint Angles Torso + Left Arm
     jAnglesMeanLeft[0] = 0.0; //Torso
     jAnglesMeanLeft[1] = 0.0;
     jAnglesMeanLeft[2] = 0.0;
@@ -113,6 +67,19 @@ void simplePMPThread::init(){
     jAnglesMeanLeft[8] = 0.0;
     jAnglesMeanLeft[9] = 0.0;
 
+    //Mean Joint Angles Torso + Right Arm
+    jAnglesMeanRight[0] = 0.0; //Torso
+    jAnglesMeanRight[1] = 0.0;
+    jAnglesMeanRight[2] = 0.0;
+
+    jAnglesMeanRight[3] = -0.7854;//Right Arm
+    jAnglesMeanRight[4] = 0.0;
+    jAnglesMeanRight[5] = 0.7098;
+    jAnglesMeanRight[6] = 0.9730;
+    jAnglesMeanRight[7] = 1.6;
+    jAnglesMeanRight[8] = 0.0;
+    jAnglesMeanRight[9] = 0.0;
+
     //TODO Write Mean Joint Angles for Right Arm
 
 #if DEBUG_CODE>0
@@ -120,6 +87,106 @@ void simplePMPThread::init(){
               << " " << jAnglesMeanLeft[2] << " " << jAnglesMeanLeft[3] << " " << jAnglesMeanLeft[4] << " " << jAnglesMeanLeft[5] //
               << " " << jAnglesMeanLeft[6] << " " << jAnglesMeanLeft[7] << " " << jAnglesMeanLeft[8] << " " << jAnglesMeanLeft[9] << std::endl;
 #endif
+
+#if DEBUG_CODE>0
+    std::cout << "Mean Joint Angles for Torso + Right Arm Configuration : " << " " << jAnglesMeanRight[0] << " " << jAnglesMeanRight[1] //
+              << " " << jAnglesMeanRight[2] << " " << jAnglesMeanRight[3] << " " << jAnglesMeanRight[4] << " " << jAnglesMeanRight[5] //
+              << " " << jAnglesMeanRight[6] << " " << jAnglesMeanRight[7] << " " << jAnglesMeanRight[8] << " " << jAnglesMeanRight[9] << std::endl;
+#endif
+
+}
+
+void simplePMPThread::setJAdmit(){
+
+    //TODO: Change the Admittance Values for each joint later
+    admitTorso.assign(3,0);
+    admitLeft.assign(7,0);//TODO: Have to change it when using more than 10 joints
+    admitRight.assign(7,0);
+
+    //Torso Admittance Values
+    admitTorso.at(0) = 0.6;//KOMP_WAISZT;
+    admitTorso.at(1) = 0;
+    admitTorso.at(2) = 0.5;//KOMP_WAISZT2;
+
+    //Left Arm Admittance Values
+    admitLeft.at(0) = 2.8;//0.09
+    admitLeft.at(1) = 0.05;
+    admitLeft.at(2) = 2;
+    admitLeft.at(3) = 2.5;
+    admitLeft.at(4) = 1;
+    admitLeft.at(5) = 1;
+    admitLeft.at(6) = 1;
+
+    //Torso Admittance Values
+    admitTorso.at(0) = 0.6;//KOMP_WAISZT;
+    admitTorso.at(1) = 0;
+    admitTorso.at(2) = 0.5;//KOMP_WAISZT2;
+
+    //Right Arm Admittance Values
+    admitRight.at(0) = 2.8;//0.09
+    admitRight.at(1) = 0.05;
+    admitRight.at(2) = 2;
+    admitRight.at(3) = 2.5;
+    admitRight.at(4) = 1;
+    admitRight.at(5) = 1;
+    admitRight.at(6) = 1;
+
+}
+
+void simplePMPThread::init(){
+
+#if DEBUG_CODE>0
+    std::cout << "Initializing PMP Thread..." << std::endl;
+#endif
+
+    //Gazebo Synchronization
+    //gzSync();
+
+
+    armLeft = new armUtils("left");
+    armRight = new armUtils("right");
+
+    RAMP_KONSTANT = 0.005;
+    t_dur = 5;
+
+    grasped=false;//This for now can be user input
+
+    posErr = 0.00001;//Position Error Threshold
+
+    memset(Gam_ArrxLeft,0,ITERATION*sizeof(double));
+    memset(Gam_ArryLeft,0,ITERATION*sizeof(double));
+    memset(Gam_ArrzLeft,0,ITERATION*sizeof(double));
+
+    memset(Gam_ArrxRight,0,ITERATION*sizeof(double));
+    memset(Gam_ArryRight,0,ITERATION*sizeof(double));
+    memset(Gam_ArrzRight,0,ITERATION*sizeof(double));
+
+    //Joint Angle Variables Torso + Left Arm
+    memset(q1L,0,ITERATION*sizeof(double));
+    memset(q2L,0,ITERATION*sizeof(double));
+    memset(q3L,0,ITERATION*sizeof(double));
+    memset(q4L,0,ITERATION*sizeof(double));
+    memset(q5L,0,ITERATION*sizeof(double));
+    memset(q6L,0,ITERATION*sizeof(double));
+    memset(q7L,0,ITERATION*sizeof(double));
+    memset(q8L,0,ITERATION*sizeof(double));
+    memset(q9L,0,ITERATION*sizeof(double));
+    memset(q10L,0,ITERATION*sizeof(double));
+
+    //Joint Angle Variables Torso + Right Arm
+    memset(q1R,0,ITERATION*sizeof(double));
+    memset(q2R,0,ITERATION*sizeof(double));
+    memset(q3R,0,ITERATION*sizeof(double));
+    memset(q4R,0,ITERATION*sizeof(double));
+    memset(q5R,0,ITERATION*sizeof(double));
+    memset(q6R,0,ITERATION*sizeof(double));
+    memset(q7R,0,ITERATION*sizeof(double));
+    memset(q8R,0,ITERATION*sizeof(double));
+    memset(q9R,0,ITERATION*sizeof(double));
+    memset(q10R,0,ITERATION*sizeof(double));
+
+    //Setting Joint Angles Mean Values
+    setJAnglesMean();
 
     //Compliances Values from PMP Analytic Module
     KFORCE = 0.01;
@@ -146,30 +213,15 @@ void simplePMPThread::init(){
     JHdR[0] = J0HR; JHdR[1] = 0.000041; JHdR[2] = J2HR; JHdR[3] = 0.041; JHdR[4] = 0.041;
     JHdR[5] = 5; JHdR[6] = 0.041; JHdR[7] = 75; JHdR[8] = J8HR; JHdR[9] = J9HR;
 
-    //TODO: Change the Admittance Values for each joint later
-    admitTorso.assign(3,0);
-    admitLeft.assign(7,0);//TODO: Have to change it when using more than 10 joints
-    admitRight.assign(7,0);
+    //Setting Joint Admittance Values
+    setJAdmit();
 
-    //Torso Admittance Values
-    admitTorso.at(0) = 0.6;//KOMP_WAISZT;
-    admitTorso.at(1) = 0;
-    admitTorso.at(2) = 0.5;//KOMP_WAISZT2;
-
-    //Left Arm Admittance Values
-    admitLeft.at(0) = 2.8;//0.09
-    admitLeft.at(1) = 0.05;
-    admitLeft.at(2) = 2;
-    admitLeft.at(3) = 2.5;
-    admitLeft.at(4) = 1;
-    admitLeft.at(5) = 1;
-    admitLeft.at(6) = 1;
-
-    //TODO Write Right Arm Admittance Values
-
+#if DEBUG_CODE>0
+    //Output Stream Files
     virTarget.open("target.txt");
     curPosition.open("position.txt");
     jointsLoc.open("joints.txt");
+#endif
 
     if(!inputPort.open("/targetPos")){
 #if DEBUG_CODE>0
@@ -183,55 +235,55 @@ void simplePMPThread::init(){
 #endif
     }
 
-    if(!leftArmAnglesPort.open("/leftArmAnglePort:i")){
+    if(!leftArmAnglesPort.open("/leftArmAnglePort:i")){//Receives Left Arm Joint Angle Values
 #if DEBUG_CODE>0
         std::cout << "Left Arm Angle Port Created : " << leftArmAnglesPort.getName().c_str() << std::endl;
 #endif
     }
 
-    if(!rightArmAnglesPort.open("/rightArmAnglePort:i")){
+    if(!rightArmAnglesPort.open("/rightArmAnglePort:i")){//Receives Right Arm Joint Angle Values
 #if DEBUG_CODE>0
         std::cout << "Right Arm Angle Port Created : " << rightArmAnglesPort.getName().c_str() << std::endl;
 #endif
     }
 
-    if(!torsoAnglesPort.open("/torsoAnglePort:i")){
+    if(!torsoAnglesPort.open("/torsoAnglePort:i")){//Receives Torso Joint Angle Values
 #if DEBUG_CODE>0
         std::cout << "Torso Angle Port Created : " << torsoAnglesPort.getName().c_str() << std::endl;
 #endif
     }
 
-    if(!leftEEPort.open("/leftEEPort:i")){
+    if(!leftEEPort.open("/leftEEPort:i")){//Receives Left Arm End Effector Value Using Cartesian Controller
 #if DEBUG_CODE>0
         std::cout << "Left End Effector Port Created : " << leftEEPort.getName().c_str() << std::endl;
 #endif
     }
 
-    if(!rightEEPort.open("/rightEEPort:i")){
+    if(!rightEEPort.open("/rightEEPort:i")){//Receives Right Arm End Effector Value Using Cartesian Controller
 #if DEBUG_CODE>0
         std::cout << "Right End Effector Port Created : " << rightEEPort.getName().c_str() << std::endl;
 #endif
     }
 
-    if(!cmdTorsoPort.open("/cmdTorso:o")){
+    if(!cmdTorsoPort.open("/cmdTorso:o")){//Sends Joint Motor Commands to Torso
 #if DEBUG_CODE>0
         std::cout << "Torso Output Commanded Position Port Created : " << cmdTorsoPort.getName().c_str() << std::endl;
 #endif
     }
 
-    if(!cmdLeftArmPort.open("/cmdLeftArm:o")){
+    if(!cmdLeftArmPort.open("/cmdLeftArm:o")){//Sends Joint Motor Commands to Left Arm
 #if DEBUG_CODE>0
         std::cout << "Left Arm Output Commanded Position Port Created : " << cmdLeftArmPort.getName().c_str() << std::endl;
 #endif
     }
 
-    if(!cmdRightArmPort.open("/cmdRightArm:o")){
+    if(!cmdRightArmPort.open("/cmdRightArm:o")){//Sends Joint Motor Commands to Right Arm
 #if DEBUG_CODE>0
         std::cout << "Right Arm Output Commanded Position Port Created : " << cmdRightArmPort.getName().c_str() << std::endl;
 #endif
     }
 
-    if(!cmdGraspPort.open("/cmdGrap:o")){
+    if(!cmdGraspPort.open("/cmdGrap:o")){//This Sends The Joint Commands for Grasping
 #if DEBUG_CODE>0
         std::cout << "Grasp Commanded Port Created : " << cmdGraspPort.getName().c_str() << std::endl;
 #endif
@@ -243,11 +295,16 @@ void simplePMPThread::init(){
     //yarp::os::Time::delay(2); //This is to show difference between Grasping and PMP Module
     //getTarget(); //Get the target, TODO: Probably can also specify which arm to use
     setTarget();
-    //readJoints();//TODO Decide which arm to move
+
+#if DEBUG_CODE>0
+    readJoints();//TODO Decide which arm to move
     //initializeJointsLeft();
     //initializeJointRight();
     //readEE(); //This method uses cartesian controller for getting the end effector positions
     //computeEEPos(); //Computing EE values using Forwards Kinematics
+#endif
+
+    //Calling Simple Virtual Trajectory Generation System
     simpleVTGS();
 
 }
@@ -346,8 +403,6 @@ void simplePMPThread::setTarget(){
 
 void simplePMPThread::readJoints(){
 
-    //NOTE: Updated Gazebo Model gives 16 joints values
-
     //Reading Torso Joint Angles
     if(!yarp::os::Network::isConnected("/icubGazeboSim/torso/state:o",torsoAnglesPort.getName().c_str())){
         yarp::os::Network::connect("/icubGazeboSim/torso/state:o",torsoAnglesPort.getName().c_str());
@@ -426,8 +481,6 @@ void simplePMPThread::readJoints(){
         yarp::os::Network::disconnect("/icubGazeboSim/right_arm_no_hand/state:o",rightArmAnglesPort.getName().c_str());
     }
 
-
-
     //Setting the Joint Angles for Torso + Left Arm Configurations
     jAnglesLT.resize(jAnglesTorso.size() + jAnglesLeftArm.size());
     jAnglesLT = jAnglesTorso;
@@ -454,14 +507,13 @@ void simplePMPThread::readJoints(){
 
 }
 
-/*void simplePMPThread::readEE(){
+void simplePMPThread::readEE(){
 
 #if DEBUG_CODE>0
             std::cout << "Reading End Effector Position and Orientation using Cartesian Control Interface" << std::endl;
 #endif
 
-    //Getting the EE Position in the Cartesian Space
-    //left Hand EE Coordinates
+    //Left Arm EE Coordinates
     if(!yarp::os::Network::isConnected("/icubGazeboSim/cartesianController/left_arm_no_hand/state:o",leftEEPort.getName().c_str())){
         yarp::os::Network::connect("/icubGazeboSim/cartesianController/left_arm_no_hand/state:o",leftEEPort.getName().c_str());
         yarp::os::Bottle *eePos;
@@ -487,7 +539,7 @@ void simplePMPThread::readJoints(){
 #endif
     }
 
-    //Right Hand EE Coordinates
+    //Right Arm EE Coordinates
     if(!yarp::os::Network::isConnected("/icubGazeboSim/cartesianController/right_arm_no_hand/state:o",rightEEPort.getName().c_str())){
         yarp::os::Network::connect("/icubGazeboSim/cartesianController/right_arm_no_hand/state:o",rightEEPort.getName().c_str());
         yarp::os::Bottle *eePos;
@@ -514,7 +566,7 @@ void simplePMPThread::readJoints(){
 #endif
     }
 
-}*/
+}
 
 void simplePMPThread::checkEEPos(){
 
@@ -531,13 +583,13 @@ void simplePMPThread::checkEEPos(){
               << " " << jAnglesLT.at(9)*CTRL_RAD2DEG << std::endl;
 #endif
 
-    //Left Arm EE
+    //Left Arm End Effector Position Computation
     //std::cout << "Size of Computed Joint Angle Commands : " << jAnglesLT.size() << std::endl;
     for(int a=0; a < jAnglesLT.size() ; a++){
         leftAngles[a] = jAnglesLT.at(a)*CTRL_RAD2DEG;
     }
 
-    //computeFKLeft(leftPos,leftAngles);
+    //computeFKLeft(leftPos,leftAngles); //This Uses Utils.h  File
 
     yarp::sig::Vector lpos; //Temp Variable
     lpos = armLeft->getEEPos(jAnglesLT);
@@ -545,17 +597,18 @@ void simplePMPThread::checkEEPos(){
     leftPos[1] = lpos[1];
     leftPos[2] = lpos[2];
 
+#if DEBUG_CODE>0
     std::cout << "Values of the Left Arm EE Position to be attained (x,y,z) : " << "(" << leftPos[0] << ","
               << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
+#endif
 
-/*
-    //Right Arm EE
+    //Right Arm End Effector Position Computation
     //std::cout << "Size of Computed Joint Angle Commands : " << jAnglesRT.size() << std::endl;
     for(int a=0; a < jAnglesRT.size() ; a++){
         rightAngles[a] = jAnglesRT.at(a)*CTRL_RAD2DEG;
     }
 
-    //computeFKRight(rightPos,rightAngles);
+    //computeFKRight(rightPos,rightAngles); //This Uses Utils.h File
 
     yarp::sig::Vector rpos; //Temp Variable
     rpos = armRight->getEEPos(jAnglesRT);
@@ -563,11 +616,10 @@ void simplePMPThread::checkEEPos(){
     rightPos[1] = rpos[1];
     rightPos[2] = rpos[2];
 
-
+#if DEBUG_CODE>0
     std::cout << "Values of the Right Arm EE Position to be attained (x,y,z) : " << "(" << rightPos[0] << ","
               << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
-
-              */
+#endif
 
 }
 
@@ -577,7 +629,7 @@ void simplePMPThread::computeEEPos(){
             std::cout << "Computing End Effector Position and Orientation using Forward Kinematics of iCub Robot from iKin Library" << std::endl;
 #endif
 
-            //Left EE
+            //Left End Effector Position Computation
 #if DEBUG_CODE>0
             std::cout << "Computing Forward Kinematics of Left Arm + Torso Configuration..." << std::endl;
 #endif
@@ -588,7 +640,7 @@ void simplePMPThread::computeEEPos(){
 #if DEBUG_CODE>0
             std::cout << "Size of Joint Angles Received : " << sizeof(leftAngles)/sizeof(double) << std::endl;
 #endif
-            //computeFKLeft(leftPos,leftAngles);
+            //computeFKLeft(leftPos,leftAngles); //This Uses Utils.h File
 
             yarp::sig::Vector lpos; //Temp Variable
             lpos = armLeft->getEEPos(jAnglesLT);
@@ -596,15 +648,13 @@ void simplePMPThread::computeEEPos(){
             leftPos[1] = lpos[1];
             leftPos[2] = lpos[2];
 
-
-
 #if DEBUG_CODE>0
             std::cout << "New Values of the Left EE Position (x,y,z) : " << "(" << leftPos[0] << ","
                       << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
 #endif
 
 
-            //Right EE
+            //Right End Effector Position Computation
 #if DEBUG_CODE>0
             std::cout << "Computing Forward Kinematics of Right Arm + Torso Configuration..." << std::endl;
 #endif
@@ -616,7 +666,7 @@ void simplePMPThread::computeEEPos(){
 #if DEBUG_CODE>0
             std::cout << "Size of Joint Angles Received : " << sizeof(rightAngles)/sizeof(double) << std::endl;
 #endif
-            //computeFKRight(rightPos,rightAngles);
+            //computeFKRight(rightPos,rightAngles); //This Uses Utils.h File
 
             yarp::sig::Vector rpos; //Temp Variable
             rpos = armRight->getEEPos(jAnglesRT);
@@ -628,30 +678,16 @@ void simplePMPThread::computeEEPos(){
             std::cout << "New Values of the Right EE Position (x,y,z) : " << "(" << rightPos[0] << ","
                       << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
 #endif
-            //if(target==true && vTarget==true){//If a target is not set and a virtual target is not generated use this for initialization
 
-                //std::cout << "Setting Initial End Effector Position..." << std::endl;
-                curPosLeftEE[0] = leftPos[0];//X Value
-                curPosLeftEE[1] = leftPos[1];//Y Value
-                curPosLeftEE[2] = leftPos[2];//Z Value
+         //std::cout << "Setting Initial End Effector Position..." << std::endl;
+         curPosLeftEE[0] = leftPos[0];//X Value
+         curPosLeftEE[1] = leftPos[1];//Y Value
+         curPosLeftEE[2] = leftPos[2];//Z Value
 
-                curPosRightEE[0] = rightPos[0];//X Value
-                curPosRightEE[1] = rightPos[1];//Y Value
-                curPosRightEE[2] = rightPos[2];//Z Value
+         curPosRightEE[0] = rightPos[0];//X Value
+         curPosRightEE[1] = rightPos[1];//Y Value
+         curPosRightEE[2] = rightPos[2];//Z Value
 
-
-            /*}else{//This is while running for virtual targets
-
-                //std::cout << "Setting Current End Effector Position..." << std::endl;
-                curPosLeftEE[0] = leftPos[0];//X Value
-                curPosLeftEE[1] = leftPos[1];//Y Value
-                curPosLeftEE[2] = leftPos[2];//Z Value
-
-                curPosRightEE[0] = rightPos[0];//X Value
-                curPosRightEE[1] = rightPos[1];//Y Value
-                curPosRightEE[2] = rightPos[2];//Z Value
-
-            }*/
 
 }
 
@@ -663,24 +699,28 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
 //#endif
 
     readJoints();
+
+#if DEBUG_CODE>0
     //initializeJointsLeft();
     //initializeJointRight();
+#endif
+
     computeEEPos();
 
-    initPosLeftEE[0] = curPosLeftEE[0]; //-48;
-    initPosLeftEE[1] = curPosLeftEE[1];//227;
-    initPosLeftEE[2] = curPosLeftEE[2]; //411;
+    initPosLeftEE[0] = curPosLeftEE[0];
+    initPosLeftEE[1] = curPosLeftEE[1];
+    initPosLeftEE[2] = curPosLeftEE[2];
 
-    initPosRightEE[0] = curPosRightEE[0]; //-48;
-    initPosRightEE[1] = curPosRightEE[1];//227;
-    initPosRightEE[2] = curPosRightEE[2]; //411;
+    initPosRightEE[0] = curPosRightEE[0];
+    initPosRightEE[1] = curPosRightEE[1];
+    initPosRightEE[2] = curPosRightEE[2];
 
-//#if DEBUG_CODE>0
+#if DEBUG_CODE>0
     std::cout << "Initial Left Arm EE Position (x,y,z) : " << "(" << initPosLeftEE[0] << ","
               << initPosLeftEE[1] << "," << initPosLeftEE[2] << ")" << std::endl;
     std::cout << "Final Left Arm Goal (x,y,z) : " << "("
               << goalLEE[0] << "," << goalLEE[1] << "," << goalLEE[2] << ")" << std::endl;
-//#endif
+#endif
 
 #if DEBUG_CODE>0
     std::cout << "Initial Right Arm EE Position (x,y,z) : " << "(" << initPosRightEE[0] << ","
@@ -689,8 +729,9 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
               << goalREE[0] << "," << goalREE[1] << "," << goalREE[2] << ")" << std::endl;
 #endif
 
+    //Local Variables
     int time;
-    double Gam; //What is this variable ? Value of Gamma after a time step
+    double Gam;
     double xoff=1, yoff=1 , zoff=1; //Offsets
 
     //Storing the Initial Values of End Effector
@@ -716,13 +757,13 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
 
     //TODO Use offset values for the goal
 
-    for(time=0; time<ITERATION ; time++){// 2000 incremental steps of delta(?) 0.005
+    for(time=0; time<ITERATION ; time++){// 2000 Incremental Steps of Size 1
 
         Gam = GammaDisc(time);
 
         //TODO Seprate the Left and Right Arm VTGS as the break moves out of the for loop
 
-        //Left Arm
+        //Left Arm Virtual Trajectory
         //X Value
         virPosLeftEE[0] = (goalLEE[0]-initPosLeftEE[0])*Gam;
         Gam_ArrxLeft[time] = virPosLeftEE[0];
@@ -744,11 +785,13 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         virPosLeftEE[2] = Gamma_Int(GarzLeft,time) + initPosLeftEEIC[2];
         initPosLeftEE[2] = virPosLeftEE[2];
 
+#if DEBUG_CODE>0
         //Output Streams Files
         //virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
         //computeEEPos(); //Computing the End Effector Positions
         //curPosition  << curPosLeftEE[0] << "		" << curPosLeftEE[1] << "		" << curPosLeftEE[2] <<endl;
         //virTarget  << initPosLeftEE[0] << "		" << initPosLeftEE[1] << "		" << initPosLeftEE[2] <<endl;
+#endif
 
 #if DEBUG_CODE>0
         std::cout << "Left EE Virtual Target Position (x,y,z) #" << time << " :              "
@@ -759,16 +802,23 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         computeTorqueLeft(forceFieldLeft);
         computeJointVelLeft();
         jVel2AngleLeft(time);
-        //checkEEPos();
 
+#if DEBUG_CODE>0
+        checkEEPos(); // Checking the End Effector Value That Will Be Reached With Each New Joint Configuration
+#endif
+
+#if DEBUG_CODE>0
         //Storing The Joing Angles to the Ouput Stream File
         for(int j = 0 ; j < jAnglesLT.size() ; j++){
                     jointsLoc << jAnglesLT.at(j) <<"		";}
                 jointsLoc<<endl;
+#endif
 
-        //TODO Put this condition after the execution of the motor command and after reading the EE positions
+       //Condition To Break the VTGS After Position Threshold Error is Reached
+       if( ( fabs((virPosLeftEE[0]-goalLEE[0])) < posErr ) &&
+           ( fabs((virPosLeftEE[1]-goalLEE[1])) < posErr ) &&
+           ( fabs((virPosLeftEE[2]-goalLEE[2])) < posErr ) ){
 
-        if( ( fabs((virPosLeftEE[0]-goalLEE[0])) < posErr ) && ( fabs((virPosLeftEE[1]-goalLEE[1])) < posErr ) && ( fabs((virPosLeftEE[2]-goalLEE[2])) < posErr ) ){
 #if DEBUG_CODE>0
     std::cout << "Virtual Target Position reached Left EE Goal Position approximately  (x,y,z) : ";
     std::cout << "(" << virPosLeftEE[0] << "," << virPosLeftEE[1] << "," << virPosLeftEE[2] << ")" << std::endl;
@@ -779,8 +829,8 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         }
 
 
-        /*
-        //Right Arm
+
+        //Right Arm Virtual Trajectory
         //X Value
         virPosRightEE[0] = (goalREE[0]-initPosRightEE[0])*Gam;
         Gam_ArrxRight[time] = virPosRightEE[0];
@@ -802,46 +852,56 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         virPosRightEE[2] = Gamma_Int(GarzRight,time) + initPosRightEEIC[2];
         initPosRightEE[2] = virPosRightEE[2];
 
+#if DEBUG_CODE>0
         //Output Streams Files
         //virTarget  << initPosRightEE[0] << "		" << initPosRightEE[1] << "		" << initPosRightEE[2] <<endl;
         //computeEEPos(); //Computing the End Effector Positions
         //curPosition  << curPosRightEE[0] << "		" << curPosRightEE[1] << "		" << curPosRightEE[2] <<endl;
         //virTarget  << initPosRightEE[0] << "		" << initPosRightEE[1] << "		" << initPosRightEE[2] <<endl;
+#endif
+
 
 #if DEBUG_CODE>0
         std::cout << "Right EE Virtual Target Position (x,y,z) #" << time << " : "
                   << "(" << virPosRightEE[0] << "," << virPosRightEE[1] << "," << virPosRightEE[2] << ")" << std::endl;
 #endif
 
-        //forceFieldRight = computeForceFieldRight(curPosRightEE,initPosRightEE);//here initPosRightEE is actually the virtual target
-        //computeTorqueRight(forceFieldRight);
-        //computeJointVelRight();
-        //jVel2AngleRight(time);
+        forceFieldRight = computeForceFieldRight(curPosRightEE,initPosRightEE);//here initPosRightEE is actually the virtual target
+        computeTorqueRight(forceFieldRight);
+        computeJointVelRight();
+        jVel2AngleRight(time);
+
+#if DEBUG_CODE>0
+        checkEEPos();
+#endif
 
 
-        //TODO Put this condition after the execution of the motor command and after reading the EE positions
+        //Condition To Break the VTGS After Position Threshold Error is Reached
+        if( ( fabs((virPosRightEE[0]-goalREE[0])) < posErr ) &&
+            ( fabs((virPosRightEE[1]-goalREE[1])) < posErr ) &&
+            ( fabs((virPosRightEE[2]-goalREE[2])) < posErr ) ){
 
-        if( ( fabs((virPosRightEE[0]-goalREE[0])) < posErr ) && ( fabs((virPosRightEE[1]-goalREE[1])) < posErr ) && ( fabs((virPosRightEE[2]-goalREE[2])) < posErr ) ){
-//#if DEBUG_CODE>0
+#if DEBUG_CODE>0
     std::cout << "Virtual Target(x,y,z) Position reached Right EE Goal Position approximately : ";
     std::cout << "(" << virPosRightEE[0] << "," << virPosRightEE[1] << "," << virPosRightEE[2] << ")" << std::endl;
-//#endif
+#endif
             break;
         }else{
             vTarget = true; //Virtual Target is Valid
         }
 
-        */
-
     }
 
+#if DEBUG_CODE>0
     //virTarget.close();
     //curPosition.close();
+#endif
 
     //Commanding Joint Motors
     cmdJointLeft();
+    cmdJointRight();
 
-    //Checking Final End Effector Position Reached
+    //Checking Final End Effector Position Reached With Commanded Joint Values
     checkEEPos();
 
 }
@@ -852,18 +912,19 @@ void simplePMPThread::cmdJointLeft(){
     std::cout << "Received Joint Angles in Degrees : ";
     double cmdJLeft[jAnglesLT.size()];
     for(int j = 0; j < jAnglesLT.size() ; j++){
-        cmdJLeft[j] = jAnglesLT.at(j)*CTRL_RAD2DEG;
+        cmdJLeft[j] = jAnglesLT.at(j)*CTRL_RAD2DEG; //This is Conversion From Radians to Degrees
         std::cout << " " << cmdJLeft[j];
     }std::cout<<std::endl;
 
-    //correctAnglesLeft(cmdJLeft);
+#if DEBUG_CODE>0
+    //correctJAngles(cmdJLeft);
+#endif
 
 #if DEBUG_CODE>0
     std::cout << "Received Joint Angles, Commanding the Motors..." << std::endl;
 #endif
 
-
-    //This is Torso Control
+    //This is Torso Motor Control
     if(!yarp::os::Network::isConnected(cmdTorsoPort.getName().c_str(),"/icubGazeboSim/torso/rpc:i")){
         yarp::os::Network::connect(cmdTorsoPort.getName().c_str(),"/icubGazeboSim/torso/rpc:i");
         for(int j = 0 ; j < 3 ; j++){//TODO Here only 3 joints are controlled
@@ -875,8 +936,11 @@ void simplePMPThread::cmdJointLeft(){
             cmdT.addDouble(cmdJLeft[j]);
             cmdTorsoPort.writeStrict();
             yarp::os::Time::delay(1);
+
+#if DEBUG_CODE>0
             //syncObject->clockServer.stepSimulation(syncObject->configuration.numberOfSteps);
             //syncObject->clockServer.continueSimulation();
+#endif
         }
 
 
@@ -887,7 +951,7 @@ void simplePMPThread::cmdJointLeft(){
 #endif
     }
 
-    //This is Left Arm Control
+    //This is Left Arm Motor Control
     if(!yarp::os::Network::isConnected(cmdLeftArmPort.getName().c_str(),"/icubGazeboSim/left_arm_no_hand/rpc:i")){
         yarp::os::Network::connect(cmdLeftArmPort.getName().c_str(),"/icubGazeboSim/left_arm_no_hand/rpc:i");
         for(int j = 3 ; j < 10 ; j++){//TODO Here only 7 joints are controlled
@@ -897,9 +961,13 @@ void simplePMPThread::cmdJointLeft(){
             cmdLA.addString("pos");
             cmdLA.addInt(j-3);
             cmdLA.addDouble(cmdJLeft[j]);
-            //std::cout << "j value : " << j-3 << " and Angle value : " << jAnglesLT.at(j) << std::endl;
             cmdLeftArmPort.writeStrict();
             yarp::os::Time::delay(1);
+
+#if DEBUG_CODE>0
+            //syncObject->clockServer.stepSimulation(syncObject->configuration.numberOfSteps);
+            //syncObject->clockServer.continueSimulation();
+#endif
         }
 
 
@@ -923,14 +991,16 @@ void simplePMPThread::cmdJointRight(){
         std::cout << " " << cmdJRight[j];
     }std::cout<<std::endl;
 
-    //correctAnglesLeft(cmdJRight);
+#if DEBUG_CODE>0
+    //correctJAngles(cmdJRight);
+#endif
 
 #if DEBUG_CODE>0
     std::cout << "Received Joint Angles, Commanding the Motors..." << std::endl;
 #endif
 
 
-    //This is Torso Control
+    //This is Torso Motor Control
     if(!yarp::os::Network::isConnected(cmdTorsoPort.getName().c_str(),"/icubGazeboSim/torso/rpc:i")){
         yarp::os::Network::connect(cmdTorsoPort.getName().c_str(),"/icubGazeboSim/torso/rpc:i");
         for(int j = 0 ; j < 3 ; j++){//TODO Here only 3 joints are controlled
@@ -941,8 +1011,12 @@ void simplePMPThread::cmdJointRight(){
             cmdT.addInt(j);
             cmdT.addDouble(cmdJRight[j]);
             cmdTorsoPort.writeStrict();
+            yarp::os::Time::delay(1);
+
+#if DEBUG_CODE>0
             //syncObject->clockServer.stepSimulation(syncObject->configuration.numberOfSteps);
             //syncObject->clockServer.continueSimulation();
+#endif
         }
 
 
@@ -953,7 +1027,7 @@ void simplePMPThread::cmdJointRight(){
 #endif
     }
 
-    //This is Right Arm Control
+    //This is Right Arm Motor Control
     if(!yarp::os::Network::isConnected(cmdRightArmPort.getName().c_str(),"/icubGazeboSim/right_arm_no_hand/rpc:i")){
         yarp::os::Network::connect(cmdRightArmPort.getName().c_str(),"/icubGazeboSim/right_arm_no_hand/rpc:i");
         for(int j = 3 ; j < 10 ; j++){//TODO Here only 7 joints are controlled
@@ -965,6 +1039,11 @@ void simplePMPThread::cmdJointRight(){
             cmdRA.addDouble(cmdJRight[j]);
             cmdRightArmPort.writeStrict();
             yarp::os::Time::delay(1);
+
+#if DEBUG_CODE>0
+            //syncObject->clockServer.stepSimulation(syncObject->configuration.numberOfSteps);
+            //syncObject->clockServer.continueSimulation();
+#endif
         }
 
 
@@ -1139,7 +1218,8 @@ void simplePMPThread::jVel2AngleRight(int _time){
 
 }
 
-void simplePMPThread::correctAnglesLeft(double *angles){
+//This is a Single Routine for Correcting Angles of Left/Right Arm
+void simplePMPThread::correctJAngles(double *angles){
 
     for(int j = 0 ; j < 10 ; j++){
         int dummy = fabs(*(angles+j)/360);
@@ -1162,7 +1242,8 @@ double* simplePMPThread::computeForceFieldLeft(double *curPos, double *tarPos){
     std::cout << "Computed Force Field for Left End Effector..." << std::endl;
 #endif
 
-    static double res[3];
+    static double res[3]; //Local Variable to Store External Force Field Values
+
 #if DEBUG_CODE>0
     double posDiff[3];
     posDiff[0] = ((*(tarPos+0)- *(curPos+0)));
@@ -1172,6 +1253,7 @@ double* simplePMPThread::computeForceFieldLeft(double *curPos, double *tarPos){
               << "," << posDiff[1] << "," << posDiff[2] << std::endl;
 #endif
 
+    //Computing External Force Field Values
     res[0] = 3.4*((*(tarPos+0)- *(curPos+0))); //0.09
     res[1] = 1.95*((*(tarPos+1)- *(curPos+1))); //0.09
     res[2] = 1.22*((*(tarPos+2)- *(curPos+2))); //0.07
@@ -1189,8 +1271,18 @@ double* simplePMPThread::computeForceFieldRight(double *curPos, double *tarPos){
     std::cout << "Computed Force Field for Right End Effector..." << std::endl;
 #endif
 
-    static double res[3];
+    static double res[3]; //Local Variable to Store External Force Field Values
 
+#if DEBUG_CODE>0
+    double posDiff[3];
+    posDiff[0] = ((*(tarPos+0)- *(curPos+0)));
+    posDiff[1] = ((*(tarPos+1)- *(curPos+1)));
+    posDiff[2] = ((*(tarPos+2)- *(curPos+2)));
+    std::cout << "Right Arm VT and Goal Position Differece :                  " << "(" << posDiff[0]
+              << "," << posDiff[1] << "," << posDiff[2] << std::endl;
+#endif
+
+    //Computing External Force Field Values
     res[0] = 0.09*(*(tarPos+0)- *(curPos+0)); //0.09
     res[1] = 0.09*((*(tarPos+1)- *(curPos+1))); //0.09
     res[2] = 0.07*((*(tarPos+2)- *(curPos+2))); //0.07
@@ -1206,14 +1298,14 @@ void simplePMPThread::computeTorqueLeft(double *leftForce){
 
     //Local Variables
     double ffL[3];
-    torqueLeft.assign(10,0); //TODO: Have to change it when using more than 10 joints
+    torqueLeft.assign(10,0);
 
-    //Assigning force to local variables
+    //Assigning Force Field Values to Local Variables
     ffL[0] = *(leftForce+0);
     ffL[1] = *(leftForce+1);
     ffL[2] = *(leftForce+2);
 
-    //Computing the Joint Limit Force Field
+    //Computing the Joint Limit Force Field from Mean Joint Values
     for(int i = 0; i < 10 ; i++){
         jLimitLeft[i] = (jAnglesMeanLeft[i] - jAnglesLT.at(i)) * JHdL[i];
         //jLimitLeft[i] = 0;
@@ -1225,11 +1317,8 @@ void simplePMPThread::computeTorqueLeft(double *leftForce){
               << " " << jLimitLeft[6] << " " << jLimitLeft[7] << " " << jLimitLeft[8] << " " << jLimitLeft[9] << std::endl;
 #endif
 
-    //jacobianLeft = computeJacobianLeft(jAnglesLT);//Note Sending Joint Angles of Torso(3)+Left Arm(16)
+    //jacobianLeft = computeJacobianLeft(jAnglesLT);
     jacobianLeft = armLeft->getJacobian(jAnglesLT);
-
-    //Using Matrix form for Jacobian
-    yarp::sig::Matrix jLeft;
 
 
 #if DEBUG_CODE>0
@@ -1263,14 +1352,14 @@ void simplePMPThread::computeTorqueRight(double *rightForce){
 
     //Local Variables
     double ffR[3];
-    torqueRight.assign(10,0); //TODO: Have to change it when using more than 10 joints
+    torqueRight.assign(10,0);
 
     //Assigning force to local variables
     ffR[0] = *(rightForce+0);
     ffR[1] = *(rightForce+1);
     ffR[2] = *(rightForce+2);
 
-    //Computing the Joint Limit Force Field
+    //Computing the Joint Limit Force Field from Mean Joint Values
     for(int i = 0; i < 10 ; i++){
         jLimitRight[i] = (jAnglesMeanRight[i] - jAnglesRT.at(i)) * JHdR[i];
         //jLimitRight[i] = 0;
@@ -1282,7 +1371,7 @@ void simplePMPThread::computeTorqueRight(double *rightForce){
               << " " << jLimitRight[6] << " " << jLimitRight[7] << " " << jLimitRight[8] << " " << jLimitRight[9] << std::endl;
 #endif
 
-    //jacobianRight = computeJacobianRight(jAnglesRT);//Note Sending Joint Angles of Torso(3)+Right Arm(16)
+    //jacobianRight = computeJacobianRight(jAnglesRT);
     jacobianRight = armRight->getJacobian(jAnglesRT);
 
 #if DEBUG_CODE>0
@@ -1312,16 +1401,14 @@ void simplePMPThread::computeTorqueRight(double *rightForce){
 
 void simplePMPThread::computeJointVelLeft(){
 
-    jointVelLeft.assign(10,0);//TODO: Have to change it when using more than 10 joints
+    jointVelLeft.assign(10,0); //This is Initialization to 0
     for(int t=0; t < 3 ; t++){
         jointVelLeft.at(t) = admitTorso.at(t)*torqueLeft.at(t);
-        //jointVelLeft.at(t) = 1*torqueLeft.at(t);
     }
 
     for(int t=3; t < 10 ; t++){
         //jointVelLeft.at(t) = KOMP_JANG*torqueLeft.at(t);
         jointVelLeft.at(t) = admitLeft.at(t-3)*torqueLeft.at(t);
-        //jointVelLeft.at(t) = 2*torqueLeft.at(t);
     }
 
 #if DEBUG_CODE>0
@@ -1335,13 +1422,14 @@ void simplePMPThread::computeJointVelLeft(){
 
 void simplePMPThread::computeJointVelRight(){
 
-    jointVelRight.assign(10,0);//TODO: Have to change it when using more than 10 joints
+    jointVelRight.assign(10,0); //This is Initialization to 0
     for(int t=0; t < 3 ; t++){
         jointVelRight.at(t) = admitTorso.at(t)*torqueRight.at(t);
     }
 
     for(int t=0; t < 7 ; t++){
         jointVelRight.at(t) = KOMP_JANG*torqueRight.at(t);
+        jointVelRight.at(t) = admitRight.at(t-3)*torqueRight.at(t);
     }
 
 #if DEBUG_CODE>0

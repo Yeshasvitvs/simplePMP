@@ -56,7 +56,7 @@ std::vector<double> armUtils::getJacobian(std::vector<double> &_qJoints){
     jacobian.assign(30,0);
 
     //std::cout << "Computing Jacobian with the Current Joint Configuration as : " << (q).toString().c_str() << std::endl;
-    yarp::sig::Matrix armJacobian = chain->AnaJacobian();
+    yarp::sig::Matrix armJacobian = chain->AnaJacobian(); //arg 3 is by default
     //std::cout << "Size of the Arm Jacobian Matrix : " << "(" << armJacobian.rows() << "," << armJacobian.cols() << ")" << std::endl;
     int rows = armJacobian.rows();
     int cols = armJacobian.cols();

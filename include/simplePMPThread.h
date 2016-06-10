@@ -34,7 +34,7 @@ private:
     armUtils* armLeft;
     armUtils* armRight;
 
-    std::string armName;
+    std::string armName;//This should be form the congiuration file
     std::string robot; //name of the robot
     std::string inputPortName; //input port
 
@@ -191,25 +191,40 @@ public:
       void getTarget(); //3D Target Position
       void setTarget();
 
+      //Joint Manual Initialization
+      void initializeJoints();
       void initializeJointsLeft();
       void initializeJointRight();
 
+      //Setting Joint Mean Angles
+      void setJAnglesMean();
+
+      //Set Joint Admittance Values
+      void setJAdmit();
+
+      //These Methods are from Utils.h File
       double forwardKinematicsLeft(double*,int);
       double forwardKinematicsRight(double*,int);
 
+      //External Force Field Computation
       double* computeForceFieldLeft(double *curPos,double *tarPos);
       double* computeForceFieldRight(double *curPos,double *tarPos);//TODO Finish this module
 
+      //Joint Torque Computation
       void computeTorqueLeft(double *leftForce);
       void computeTorqueRight(double *rightForce);
 
+
+
+      //Joint Velocity Computation
       void computeJointVelLeft();
       void computeJointVelRight();
 
-      //Convert Joint Velocity to Joint Angle
+      //Joint Velocity to Joint Angle Conversion
       void jVel2AngleLeft(int _time);
       void jVel2AngleRight(int _time);
 
+      //End Effector Velocity Computation
       void computeEEVelLeft();
       void computeEEVelRight();
 
@@ -218,10 +233,13 @@ public:
       void cmdJointRight();
 
       //Correct Joint Angles
-      void correctAnglesLeft(double *angles);
+      void correctJAngles(double *angles);
 
       //Grasp Routine for 2R Manipulator
       void grasp();
+
+      //Gazebo Synchronization
+      void gzSync();
 
       double Gamma_Int(double *Gar,int n);
       double Gamma(int _Time); //returns gamma after the time duration

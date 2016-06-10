@@ -10,7 +10,7 @@
 #include<iCub/iKin/iKinFwd.h>
 #include<iCub/ctrl/math.h>
 
-#define version 2.0
+#define version 1.0//Gazebo Model V1.0
 
 using namespace std;
 using namespace iCub;
