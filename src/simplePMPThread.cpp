@@ -14,17 +14,19 @@ typedef struct InternalData InternalData;
 InternalData* syncObject = new InternalData();
 
 simplePMPThread::simplePMPThread(){ //Default Constructor
-
-
 }
-
-simplePMPThread::simplePMPThread(std::string _robot){
-    robot = _robot;
-    //configFile = _configFile;
+simplePMPThread::simplePMPThread(std::string partName){
+    armName = partName;
+    std::cout << "Running PMPModule on iCub Robot " << armName.c_str() << " arm " << std::endl;
 }
 
 simplePMPThread::~simplePMPThread(){
 
+}
+
+bool simplePMPThread::start(){
+    threadInit();
+    return true;
 }
 
 void simplePMPThread::gzSync(){
@@ -148,6 +150,54 @@ void simplePMPThread::setJAdmit(){
 
 }
 
+bool simplePMPThread::threadInit(){
+    init();
+    return true;
+}
+void simplePMPThread::threadRelease(){
+    std::cout << "Releasing SimplePMP Thread..." << std::endl;
+}
+void simplePMPThread::onStop(){
+
+    inputPort.interrupt();
+    inputPort.close();
+
+    outputPort.interrupt();
+    outputPort.close();
+
+    cmdGraspPort.interrupt();
+    cmdGraspPort.close();
+
+    if(armName == "left" || armName == "lr"){
+
+        leftArmAnglesPort.interrupt();
+        leftArmAnglesPort.close();
+
+        leftEEPort.interrupt();
+        leftEEPort.close();
+
+        cmdTorsoPort.interrupt();
+        cmdTorsoPort.close();
+
+        cmdLeftArmPort.interrupt();
+        cmdLeftArmPort.close();
+
+    }else if(armName == "right" || armName == "lr"){
+
+        rightArmAnglesPort.interrupt();
+        rightArmAnglesPort.close();
+
+        rightEEPort.interrupt();
+        rightEEPort.close();
+
+        cmdTorsoPort.interrupt();
+        cmdTorsoPort.close();
+
+        cmdRightArmPort.interrupt();
+        cmdRightArmPort.close();
+    }
+}
+
 void simplePMPThread::init(){
 
 #if DEBUG_CODE>0
@@ -157,7 +207,7 @@ void simplePMPThread::init(){
     //Gazebo Synchronization
     //gzSync();
 
-    armName = "right"; //TODO: Get this form the config file to decide which arm to move
+    //armName = "right"; //TODO: Get this form the config file to decide which arm to move
     armLeft = new armUtils("left");
     armRight = new armUtils("right");
 
@@ -341,7 +391,7 @@ void simplePMPThread::init(){
     }
 
     //This is for Commanding Joints for Grasping
-    if(!cmdGraspPort.open("/cmdGrap:o")){//This Sends The Joint Commands for Grasping
+    if(!cmdGraspPort.open("/cmdGrasp:o")){//This Sends The Joint Commands for Grasping
 #if DEBUG_CODE>0
         std::cout << "Grasp Commanded Port Created : " << cmdGraspPort.getName().c_str() << std::endl;
 #endif
@@ -704,10 +754,10 @@ void simplePMPThread::checkEEPos(){
     leftPos[1] = lpos[1];
     leftPos[2] = lpos[2];
 
-#if DEBUG_CODE>0
+//#if DEBUG_CODE>0
     std::cout << "Values of the Left Arm EE Position to be attained (x,y,z) : " << "(" << leftPos[0] << ","
               << leftPos[1] << "," << leftPos[2] << ")" << std::endl;
-#endif
+//#endif
 
     }else if(armName == "right" || armName == "lr"){
 
@@ -738,10 +788,10 @@ void simplePMPThread::checkEEPos(){
         rightPos[1] = rpos[1];
         rightPos[2] = rpos[2];
 
-#if DEBUG_CODE>0
+//#if DEBUG_CODE>0
     std::cout << "Values of the Right Arm EE Position to be attained (x,y,z) : " << "(" << rightPos[0] << ","
               << rightPos[1] << "," << rightPos[2] << ")" << std::endl;
-#endif
+//#endif
     }
 }
 
@@ -854,13 +904,12 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         initPosLeftEEIC[1] = initPosLeftEE[1];
         initPosLeftEEIC[2] = initPosLeftEE[2];
 
-#if DEBUG_CODE>0
         //Storing the Initial Values of Joint Angles
         initJAnglesLT.assign(jAnglesLT.size(),0);
         for(int j = 0 ; j < jAnglesLT.size() ; j++){
             initJAnglesLT.at(j) = jAnglesLT.at(j);
         }
-#endif
+
 
     }else if(armName == "right" || armName == "lr"){
 
@@ -880,16 +929,12 @@ void simplePMPThread::simpleVTGS(){//This depends on the number of intermediate 
         initPosRightEEIC[1] = initPosRightEE[1];
         initPosRightEEIC[2] = initPosRightEE[2];
 
-#if DEBUG_CODE>0
         //Storing the Initial Values of Joint Angles
         initJAnglesRT.assign(jAnglesRT.size(),0);
 
         for(int j = 0 ; j < jAnglesRT.size() ; j++){
             initJAnglesRT.at(j) = jAnglesRT.at(j);
         }
-#endif
-
-
     }
 
 

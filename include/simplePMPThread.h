@@ -161,27 +161,16 @@ private:
     std::vector<double> eeVelRight;
 
 public:
-
-    /**
-      * constructor default
-      */
       simplePMPThread();
-
-      /**
-          * constructor
-          * @param robotname name of the robot
-          */
-      simplePMPThread(std::string robotname);
-
-      /**
-       * destructor
-       */
+      simplePMPThread(std::string partName);
       ~simplePMPThread();
 
-//      bool threadInit();
-//      void threadRelease();
-     void run();
-//      void onStop();
+
+      void run();
+      bool threadInit();
+      void onStop();
+      void threadRelease();
+      bool start();
       void init();
       void readJoints();
       void readEE();//Uses Cartesian Controller for EE Position and Orientation
